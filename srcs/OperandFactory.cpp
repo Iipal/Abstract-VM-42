@@ -18,13 +18,19 @@ IOperand const *OperandFactory::createOperand(eOperandType type, std::string con
             return (this->*fnptrCreateOperands[type])(value);
         }
     }
-    throw UnknownOperandTypeOccuredException();
+
+    try {
+        throw UnknownOperandTypeOccuredException();
+    } catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
+    }
+
     return NULL;
 }
 
 /* private methods */
-IOperand const *OperandFactory::createInt8(std::string const &value) const {  }
-IOperand const *OperandFactory::createInt16(std::string const &value) const {  }
-IOperand const *OperandFactory::createInt32(std::string const &value) const {  }
-IOperand const *OperandFactory::createFloat(std::string const &value) const {  }
+IOperand const *OperandFactory::createInt8  (std::string const &value) const {  }
+IOperand const *OperandFactory::createInt16 (std::string const &value) const {  }
+IOperand const *OperandFactory::createInt32 (std::string const &value) const {  }
+IOperand const *OperandFactory::createFloat (std::string const &value) const {  }
 IOperand const *OperandFactory::createDouble(std::string const &value) const {  }
