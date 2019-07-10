@@ -10,6 +10,8 @@ int main(int argc, char *argv[]) {
         commandQueue = r.readStandardInput();
     } else if (1 == argc) {
         commandQueue = r.readFileInput(*argv);
+    } else {
+        std::cout << "Usage: ./avm <file-name>.avm" << std::endl;
     }
 
     if (commandQueue) {
