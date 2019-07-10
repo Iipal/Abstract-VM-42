@@ -12,11 +12,25 @@ Reader &Reader::operator=(Reader const &copy) {
 std::vector<std::string> *Reader::readStandardInput(void) const {
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
 
+    std::string _hostName;
+    std::string _fullExecutablePath;
+    {
+        char _hnBuff[32];
+        gethostname(_hnBuff, 32);
+
+        char *_fepBuff = NULL;
+        _fepBuff = getcwd(_fepBuff, 64);
+
+        _fullExecutablePath = std::string(_fepBuff);
+        _hostName = std::string(_hnBuff);
+    }
+
+    std::cout << "\tAVM standard console input mode" << std::endl;
+
     std::string _tmp;
     bool _exit = false;
-    std::cout << "\tAVM standard input mode" << std::endl;
     while (!_exit) {
-        std::cout << "AVM: ";
+        std::cout << '@' << _hostName << " ➜ " << _fullExecutablePath << ": ";
         std::getline(std::cin, _tmp);
         if (_tmp == ";;") {
             _exit = true;
@@ -27,7 +41,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
             delete outCommandsQueue;
             outCommandsQueue = NULL;
         } else {
-            if (_tmp != "") {
+            if (_tmp.size()) {
                 if (_tmp == "help" || _tmp == "h") {
                     std::cout << "AVM HELP INFO:" << std::endl << std::setiosflags(std::ios::left)
                         << "| " INVERT "exit  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": stop parsing and execute AVM if it's possible;" << '|' << std::endl
@@ -89,8 +103,8 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
 bool Reader::validatingReadedCommandQueue(std::vector<std::string> *commandQueue) const {
     const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push", "assert" };
     const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
-                                                    "add", "sub", "mul", "div", "mod",
-                                                    "pop", "dump" };
+                                                            "add", "sub", "mul", "div", "mod",
+                                                            "pop", "dump" };
     bool isValidCurrentCommand = false;
     bool isValidCommandQueue = true;
 
@@ -102,14 +116,13 @@ bool Reader::validatingReadedCommandQueue(std::vector<std::string> *commandQueue
             size_t j = ~0ULL;
             while (MAX_VALID_NO_PARAM_COMMANDS > ++j) {
                 if ((*commandQueue)[i] == _validCommandsNoParams[j]) {
-                    std::cout << (*commandQueue)[i] << std::endl;
                     isValidCurrentCommand = true;
                 }
             }
         }
         { /* validate commands what has parameter. */
             size_t j = ~0ULL;
-            while (MAX_VALID_W_PARAM_COMMANDS > ++j) {
+            while (MAX_VALID_W_PARAM_COMMANDS > ++j && !isValidCurrentCommand) {
                 if (!(*commandQueue)[i].compare(0, _validCommandsWithParams[j].length(), _validCommandsWithParams[j].c_str())) {
                     std::cout << (*commandQueue)[i] << std::endl;
                     isValidCurrentCommand = true;
