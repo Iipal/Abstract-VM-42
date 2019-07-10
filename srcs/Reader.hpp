@@ -4,7 +4,8 @@
 #include <fstream>
 #include <vector>
 
-#define MAX_VALID_COMMANDS 11
+#define MAX_VALID_NO_PARAM_COMMANDS 9
+#define MAX_VALID_W_PARAM_COMMANDS 2
 
 #define RED "\033[31m"
 #define WHITE "\033[0m"

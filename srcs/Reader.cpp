@@ -40,9 +40,12 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
         std::string _tmp;
         while (std::getline(_file, _tmp)) {
             if (_tmp.compare(0, 1, ";")) {
-                outCommandsQueue->push_back(_tmp);
+                if (_tmp != "") {
+                    outCommandsQueue->push_back(_tmp);
+                }
             }
         }
+
         if (!outCommandsQueue->size()) {
             std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
             delete outCommandsQueue;
@@ -57,9 +60,10 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
 }
 
 bool Reader::validatingReadedCommandQueue(std::vector<std::string> *commandQueue) const {
-    const std::string _validCommandQueue[MAX_VALID_COMMANDS] = { "print", "exit",
+    const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push", "assert" };
+    const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
                                                     "add", "sub", "mul", "div", "mod",
-                                                    "push", "pop", "dump", "assert" };
+                                                    "pop", "dump" };
     bool isValidCurrentCommand = false;
     bool isValidCommandQueue = true;
 
@@ -68,8 +72,15 @@ bool Reader::validatingReadedCommandQueue(std::vector<std::string> *commandQueue
         isValidCurrentCommand = false;
 
         size_t j = ~0ULL;
-        while (MAX_VALID_COMMANDS > ++j) {
-            if ((*commandQueue)[i] == _validCommandQueue[j]) {
+        while (MAX_VALID_NO_PARAM_COMMANDS > ++j) {
+            if ((*commandQueue)[i] == _validCommandsNoParams[j]) {
+                std::cout << (*commandQueue)[i] << std::endl;
+                isValidCurrentCommand = true;
+            }
+        }
+        j = ~0ULL;
+        while (MAX_VALID_W_PARAM_COMMANDS > ++j) {
+            if (!(*commandQueue)[i].compare(0, _validCommandsWithParams[j].length(), _validCommandsWithParams[j].c_str()))  {
                 std::cout << (*commandQueue)[i] << std::endl;
                 isValidCurrentCommand = true;
             }
