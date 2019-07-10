@@ -12,7 +12,7 @@
 #define WHITE "\033[0m"
 #define INVERT "\033[7m"
 
-#define ERR_PREFIX "AVM: " RED "error" WHITE ": "
+#define ERR_PREFIX "AVM " RED "errno" WHITE ": "
 
 class Reader {
 public:

@@ -14,15 +14,21 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
     std::string _tmp;
     bool _exit = false;
-    std::cout << "AVM standard input mode:" << std::endl;
+    std::cout << "\tAVM standard input mode" << std::endl;
     while (!_exit) {
         std::cout << "AVM: ";
         std::getline(std::cin, _tmp);
-        if (std::cin.bad() || _tmp == ";;") {
+        if (_tmp == ";;") {
             _exit = true;
+        } else if (std::cin.bad() || std::cin.eof()) {
+            _exit = true;
+            std::cout << std::endl << ERR_PREFIX << "Occured invalid in standard input;" << std::endl;
+
+            delete outCommandsQueue;
+            outCommandsQueue = NULL;
         } else {
             if (_tmp != "") {
-                if (_tmp == "help") {
+                if (_tmp == "help" || _tmp == "h") {
                     std::cout << "AVM HELP INFO:" << std::endl << std::setiosflags(std::ios::left)
                         << "| " INVERT "exit  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": stop parsing and execute AVM if it's possible;" << '|' << std::endl
                         << "| " INVERT "print " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
@@ -33,7 +39,8 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                         << "| " INVERT "sub   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, subtracts them, then stacks the result;" << '|' << std::endl
                         << "| " INVERT "mul   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
                         << "| " INVERT "div   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT "mod   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl;
+                        << "| " INVERT "mod   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
+                        << "| " INVERT "help  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
                 } else {
                     outCommandsQueue->push_back(_tmp);
                 }
@@ -41,10 +48,12 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         }
     }
 
-    if (!outCommandsQueue->size()) {
-        std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
-        delete outCommandsQueue;
-        outCommandsQueue = NULL;
+    if (outCommandsQueue) {
+        if (!outCommandsQueue->size()) {
+            std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
+            delete outCommandsQueue;
+            outCommandsQueue = NULL;
+        }
     }
 
     return outCommandsQueue;
