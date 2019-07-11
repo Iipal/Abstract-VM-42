@@ -30,7 +30,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
     std::string _tmp;
     bool _exit = false;
     while (!_exit) {
-        std::cout << '@' << _hostName << " ➜ " << _fullExecutablePath << ": ";
+        std::cout << '@' << _hostName << " " RED "➜" WHITE " " << INVERT << _fullExecutablePath << WHITE << ": ";
         std::getline(std::cin, _tmp);
         if (_tmp == ";;") {
             _exit = true;
@@ -54,6 +54,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                         << "| " INVERT "mul   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
                         << "| " INVERT "div   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
                         << "| " INVERT "mod   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
+                        << "| " INVERT ";;    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop waiting any input, start syntax parse and try to execute AVM;" << '|' << std::endl
                         << "| " INVERT "help  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
                 } else {
                     outCommandsQueue->push_back(_tmp);
@@ -101,10 +102,11 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
 }
 
 bool Reader::validatingReadedCommandQueue(std::vector<std::string> *commandQueue) const {
-    const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push", "assert" };
     const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
                                                             "add", "sub", "mul", "div", "mod",
                                                             "pop", "dump" };
+    const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push ", "assert " };
+
     bool isValidCurrentCommand = false;
     bool isValidCommandQueue = true;
 
@@ -124,8 +126,13 @@ bool Reader::validatingReadedCommandQueue(std::vector<std::string> *commandQueue
             size_t j = ~0ULL;
             while (MAX_VALID_W_PARAM_COMMANDS > ++j && !isValidCurrentCommand) {
                 if (!(*commandQueue)[i].compare(0, _validCommandsWithParams[j].length(), _validCommandsWithParams[j].c_str())) {
-                    std::cout << (*commandQueue)[i] << std::endl;
-                    isValidCurrentCommand = true;
+                    if (!j) { /* if (!j): means if we trying to validate 'push' command */
+                        isValidCurrentCommand
+                            = this->validatePushCommand((*commandQueue)[i].substr(_validCommandsWithParams[j].length(),
+                                _validCommandsWithParams[j].length() - (*commandQueue)[i].length()));
+                    } else {
+                        isValidCurrentCommand = true;
+                    }
                 }
             }
         }
@@ -139,4 +146,38 @@ bool Reader::validatingReadedCommandQueue(std::vector<std::string> *commandQueue
         std::cout << ERR_PREFIX << "invalid command queue, execute AVM is impossible;" << std::endl;
     }
     return isValidCommandQueue;
+}
+
+bool Reader::validatePushCommand(std::string const &_pushType) const {
+    static const std::string _validPushParamTypes[MaxOperandTypes] = { "int8(", "int16(", "int32(", "float(", "double(" };
+
+    bool isValid = true;
+    size_t i = ~0ULL;
+    while (MaxOperandTypes > ++i) {
+        if (!_pushType.compare(0, _validPushParamTypes[i].length(), _validPushParamTypes[i].c_str())) {
+            std::string _pushValue = _pushType.substr(_validPushParamTypes[i].length(), _pushType.length() - _validPushParamTypes[i].length() - 1);
+            const size_t _pushValueTypeParamEndBracketPos = _pushType.find_first_of(')', _validPushParamTypes[i].length());
+
+            if (_pushValueTypeParamEndBracketPos < _pushType.length() && _pushValueTypeParamEndBracketPos + 1 == _pushType.length()) {
+                if (3 > i) {
+                    isValid = !_pushValue.empty()
+                        && std::find_if(_pushValue.begin(), _pushValue.end(), [](char c) { return !std::isdigit(c); }) == _pushValue.end();
+                    if (!isValid) {
+                        std::cout << ERR_PREFIX << "\'" << _pushValue << "\' must to contain only digits;" << std::endl;
+                    }
+                    return isValid;
+                }
+            } else {
+                if (_pushValueTypeParamEndBracketPos < _pushType.length() && _pushValueTypeParamEndBracketPos + 1 != _pushType.length()) {
+                    std::cout << ERR_PREFIX << "trash detected after ending bracket: \'" << _pushType.substr(_pushValueTypeParamEndBracketPos + 1, _pushType.length() - _pushValueTypeParamEndBracketPos) << "\'; " << std::endl;
+                } else {
+                    std::cout << ERR_PREFIX << "in \'" << _pushType << "\' has no ending bracket \')\'" << std::endl;
+                }
+                isValid = false;
+            }
+            return isValid;
+        }
+    }
+
+    return false;
 }

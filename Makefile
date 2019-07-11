@@ -1,8 +1,10 @@
 NAME := avm
 NPWD := $(CURDIR)/$(NAME)
 
-CC := clang++ -march=native -mtune=native -Ofast -flto -pipe
-CC_DEBUG := clang++ -march=native -mtune=native -g3 -D DEBUG -fsanitize=address
+CC_BASE := clang++ -march=native -mtune=native
+
+CC := $(CC_BASE) -std=c++11 -Ofast -flto -pipe
+CC_DEBUG := $(CC_BASE) -std=c++11 -g3 -D DEBUG -fsanitize=address
 CFLAGS := -Wall -Wextra -Werror -Wunused
 
 SRCS := $(abspath $(wildcard srcs/*.cpp srcs/*/*.cpp srcs/*/*/*.cpp))
