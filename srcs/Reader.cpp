@@ -30,10 +30,10 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         _hostName = std::string(_hnBuff);
     }
 
-    const size_t avmDefaultInputMsgLenght = 1 + _hostName.length() + _fullExecutablePath.length();
+    const size_t avmDefaultInputMsgLenght = _hostName.length() + _fullExecutablePath.length();
 
-    bool isAllValid = true;
-    std::cout << INVERT "   " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM standard console input mode" << WHITE << std::endl;
+    bool isValid = true;
+    std::cout << INVERT "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM standard console input mode" << WHITE << std::endl;
     std::string _tmp;
     bool _exit = false;
     while (!_exit) {
@@ -41,16 +41,16 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         std::getline(std::cin, _tmp);
         if (_tmp == ";;") {
             _exit = true;
-            std::cout << INVERT "   " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "Starts AVM Command Queue Parser:" << WHITE << std::endl;
-        } else if (std::cin.bad() || std::cin.eof()) {
+            std::cout << INVERT "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "Starts AVM Command Queue Parser:" << WHITE << std::endl;
+        } else if (std::cin.bad() || std::cin.eof() || std::cin.fail()) {
             _exit = true;
-            std::cout << std::endl << ERR_PREFIX "Occured error symbol in standard input;" << std::endl;
-            isAllValid = false;
+            std::cout << std::endl << ERR_PREFIX "Error occured in standard input;" << std::endl;
+            isValid = false;
         } else {
             if (_tmp.size()) {
                 if (_tmp == "help" || _tmp == "h") {
-                    std::cout << INVERT "   " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM help info: " << WHITE << std::endl << std::setiosflags(std::ios::left)
-                        << "| command | " << std::setw(14) << "parameter" << std::setw(95) << ": description" << '|' << std::endl
+                    std::cout << INVERT "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM help info: " << WHITE << std::endl << std::setiosflags(std::ios::left)
+                        << "| "        "command"       " | " << std::setw(14) << "parameter"     << std::setw(95) << ": description" << '|' << std::endl
                         << "| " INVERT "exit   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
                         << "| " INVERT "print  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
                         << "| " INVERT "assert " WHITE " | " << std::setw(14) << "@exception"    << std::setw(95) << ": check is @exception is true or not;" << '|' << std::endl
@@ -62,7 +62,8 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                         << "| " INVERT "div    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
                         << "| " INVERT "mod    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
                         << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop waiting for any input, start syntax command queue parse and try to execute AVM;" << '|' << std::endl
-                        << "| " INVERT "help   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
+                        << "| " INVERT "help   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl
+                        << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ingored;" << '|' << std::endl;
                 } else {
                     outCommandsQueue->push_back(_tmp);
                 }
@@ -72,9 +73,9 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
     if (!outCommandsQueue->size()) {
         std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
-        isAllValid = false;
+        isValid = false;
     }
-    if (!isAllValid) {
+    if (!isValid) {
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     }
@@ -155,6 +156,7 @@ bool Reader::validatingReadedCommandQueue(std::vector<std::string> *commandQueue
     return isValidCommandQueue;
 }
 
+/* private methods */
 bool Reader::validatePushCommand(std::string const &_pushType) const {
     static const std::string _validPushParamTypes[MaxOperandTypes] = { "int8(", "int16(", "int32(", "float(", "double(" };
 
@@ -172,7 +174,6 @@ bool Reader::validatePushCommand(std::string const &_pushType) const {
                     if (!isValid) {
                         std::cout << ERR_PREFIX << "\'" << _pushValue << "\' must to contain only digits;" << std::endl;
                     }
-                    return isValid;
                 } else {
                     std::cout << _pushValue << std::endl;
                 }
