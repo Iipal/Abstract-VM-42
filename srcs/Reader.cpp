@@ -1,4 +1,4 @@
-#include "Reader.hpp"
+    #include "Reader.hpp"
 
 Reader::Reader() { }
 Reader::Reader(Reader const &copy) { *this = copy; }
@@ -11,6 +11,11 @@ Reader &Reader::operator=(Reader const &copy) {
 
 std::vector<std::string> *Reader::readStandardInput(void) const {
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
+
+    if (!outCommandsQueue) {
+        std::cout << ERR_PREFIX "Cannot allocate memory." << std::endl;
+        return outCommandsQueue;
+    }
 
     std::string _hostName;
     std::string _fullExecutablePath;
@@ -25,37 +30,39 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         _hostName = std::string(_hnBuff);
     }
 
-    std::cout << "\tAVM standard console input mode" << std::endl;
+    const size_t avmDefaultInputMsgLenght = 1 + _hostName.length() + _fullExecutablePath.length();
 
+    bool isAllValid = true;
+    std::cout << INVERT "   " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM standard console input mode" << WHITE << std::endl;
     std::string _tmp;
     bool _exit = false;
     while (!_exit) {
-        std::cout << '@' << _hostName << " " RED "➜" WHITE " " << INVERT << _fullExecutablePath << WHITE << ": ";
+        std::cout << RED "@" WHITE << _hostName << " " RED "➜" WHITE " " << INVERT << _fullExecutablePath << WHITE << ": ";
         std::getline(std::cin, _tmp);
         if (_tmp == ";;") {
             _exit = true;
+            std::cout << INVERT "   " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "Starts AVM Command Queue Parser:" << WHITE << std::endl;
         } else if (std::cin.bad() || std::cin.eof()) {
             _exit = true;
-            std::cout << std::endl << ERR_PREFIX << "Occured invalid in standard input;" << std::endl;
-
-            delete outCommandsQueue;
-            outCommandsQueue = NULL;
+            std::cout << std::endl << ERR_PREFIX "Occured error symbol in standard input;" << std::endl;
+            isAllValid = false;
         } else {
             if (_tmp.size()) {
                 if (_tmp == "help" || _tmp == "h") {
-                    std::cout << "AVM HELP INFO:" << std::endl << std::setiosflags(std::ios::left)
-                        << "| " INVERT "exit  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": stop parsing and execute AVM if it's possible;" << '|' << std::endl
-                        << "| " INVERT "print " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
-                        << "| " INVERT "assert" WHITE " | " << std::setw(14) << "@exception"    << std::setw(95) << ": check is @exception is true or not;" << '|' << std::endl
-                        << "| " INVERT "push  " WHITE " | " << std::setw(14) << "@type(@value)" << std::setw(95) << ": valid @type is int8, int16, int32, float, double; Pushes the @value at the top of the stack;" << '|' << std::endl
-                        << "| " INVERT "pop   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the value from the top of the stack;" << '|' << std::endl
-                        << "| " INVERT "add   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, adds them, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT "sub   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, subtracts them, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT "mul   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT "div   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT "mod   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT ";;    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop waiting any input, start syntax parse and try to execute AVM;" << '|' << std::endl
-                        << "| " INVERT "help  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
+                    std::cout << INVERT "   " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM help info: " << WHITE << std::endl << std::setiosflags(std::ios::left)
+                        << "| command | " << std::setw(14) << "parameter" << std::setw(95) << ": description" << '|' << std::endl
+                        << "| " INVERT "exit   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
+                        << "| " INVERT "print  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
+                        << "| " INVERT "assert " WHITE " | " << std::setw(14) << "@exception"    << std::setw(95) << ": check is @exception is true or not;" << '|' << std::endl
+                        << "| " INVERT "push   " WHITE " | " << std::setw(14) << "@type(@value)" << std::setw(95) << ": valid @type is int8, int16, int32, float, double; Pushes the @value at the top of the stack;" << '|' << std::endl
+                        << "| " INVERT "pop    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the value from the top of the stack;" << '|' << std::endl
+                        << "| " INVERT "add    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, adds them, then stacks the result;" << '|' << std::endl
+                        << "| " INVERT "sub    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, subtracts them, then stacks the result;" << '|' << std::endl
+                        << "| " INVERT "mul    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
+                        << "| " INVERT "div    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
+                        << "| " INVERT "mod    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
+                        << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop waiting for any input, start syntax command queue parse and try to execute AVM;" << '|' << std::endl
+                        << "| " INVERT "help   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
                 } else {
                     outCommandsQueue->push_back(_tmp);
                 }
@@ -63,14 +70,14 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         }
     }
 
-    if (outCommandsQueue) {
-        if (!outCommandsQueue->size()) {
-            std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
-            delete outCommandsQueue;
-            outCommandsQueue = NULL;
-        }
+    if (!outCommandsQueue->size()) {
+        std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
+        isAllValid = false;
     }
-
+    if (!isAllValid) {
+        delete outCommandsQueue;
+        outCommandsQueue = NULL;
+    }
     return outCommandsQueue;
 }
 
@@ -166,6 +173,8 @@ bool Reader::validatePushCommand(std::string const &_pushType) const {
                         std::cout << ERR_PREFIX << "\'" << _pushValue << "\' must to contain only digits;" << std::endl;
                     }
                     return isValid;
+                } else {
+                    std::cout << _pushValue << std::endl;
                 }
             } else {
                 if (_pushValueTypeParamEndBracketPos < _pushType.length() && _pushValueTypeParamEndBracketPos + 1 != _pushType.length()) {
