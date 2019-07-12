@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <vector>
+#include <list>
 #include <iomanip>
 #include <unistd.h>
 #include "IOperand.hpp"
@@ -26,12 +26,12 @@ public:
 
     Reader &operator=(Reader const &copy);
 
-    std::vector<std::string> *readStandardInput(void) const;
-    std::vector<std::string> *readFileInput(std::string const &fileName) const;
+    std::list<std::string> *readStandardInput(void) const;
+    std::list<std::string> *readFileInput(std::string const &fileName) const;
 
 private:
     bool validatingReadedCommand(std::string const &command) const;
-    bool validatePushCommand(std::string const &_pushType) const;
+    bool validatingCommandParam(std::string const &_pushType) const;
 
     static const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS];
     static const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS];

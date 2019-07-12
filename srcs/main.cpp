@@ -4,7 +4,7 @@ int main(int argc, char *argv[]) {
     --argc; ++argv;
 
     Reader r;
-    std::vector<std::string> *commandQueue = NULL;
+    std::list<std::string> *commandQueue = NULL;
 
     if (!argc) {
         commandQueue = r.readStandardInput();

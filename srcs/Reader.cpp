@@ -16,8 +16,8 @@ Reader &Reader::operator=(Reader const &copy) {
     return *this;
 }
 
-std::vector<std::string> *Reader::readStandardInput(void) const {
-    std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
+std::list<std::string> *Reader::readStandardInput(void) const {
+    std::list<std::string> *outCommandsQueue = new std::list<std::string>();
     if (!outCommandsQueue) {
         std::cout << ERR_PREFIX "Cannot allocate memory." << std::endl;
         return outCommandsQueue;
@@ -28,12 +28,15 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
     {
         char _hnBuff[32];
         gethostname(_hnBuff, 32);
+        _hostName = std::string(_hnBuff);
 
         char *_fepBuff = NULL;
-        _fepBuff = getcwd(_fepBuff, 64);
+        _fepBuff = getwd(_fepBuff);
 
         _fullExecutablePath = std::string(_fepBuff);
-        _hostName = std::string(_hnBuff);
+        const size_t _lastOfSlashInFEP = _fullExecutablePath.find_last_of('/', 0);
+        if (_lastOfSlashInFEP < _fullExecutablePath.length())
+            _fullExecutablePath = _fullExecutablePath.substr(_lastOfSlashInFEP, _fullExecutablePath.length() - _lastOfSlashInFEP);
     }
 
     const size_t avmDefaultInputMsgLenght = _hostName.length() + _fullExecutablePath.length();
@@ -76,7 +79,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                         << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl;
                 } else {
                     if (validatingReadedCommand(_tmp)) {
-                        outCommandsQueue->push_back(_tmp);
+                        outCommandsQueue->push_front(_tmp);
                     } else {
                         std::cout << ERR_PREFIX "invalid command was detected, it's was ignored to add to command queue, try another command ('h')" << std::endl;
                     }
@@ -96,8 +99,8 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
     return outCommandsQueue;
 }
 
-std::vector<std::string> *Reader::readFileInput(std::string const &fileName) const {
-    std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
+std::list<std::string> *Reader::readFileInput(std::string const &fileName) const {
+    std::list<std::string> *outCommandsQueue = new std::list<std::string>();
     if (!outCommandsQueue) {
         std::cout << ERR_PREFIX "Cannot allocate memory." << std::endl;
         return outCommandsQueue;
@@ -111,7 +114,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
             if (_tmp.compare(0, 1, ";")) {
                 if (_tmp.size()) {
                     if (validatingReadedCommand(_tmp)) {
-                        outCommandsQueue->push_back(_tmp);
+                        outCommandsQueue->push_front(_tmp);
                     } else {
                         isValid = false;
                     }
@@ -146,13 +149,9 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
 
     for (size_t j = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++j;) {
         if (!command.compare(0, _validCommandsWithParams[j].length(), _validCommandsWithParams[j].c_str())) {
-            if (!j) { /* if (!j): means if we trying to validate 'push' command */
-                isValidCurrentCommand
-                    = this->validatePushCommand(command.substr(_validCommandsWithParams[j].length(),
-                        _validCommandsWithParams[j].length() - command.length()));
-            } else {
-                isValidCurrentCommand = true;
-            }
+            isValidCurrentCommand
+                = this->validatingCommandParam(command.substr(_validCommandsWithParams[j].length(),
+                    _validCommandsWithParams[j].length() - command.length()));
         }
     }
 
@@ -162,18 +161,18 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
     return isValidCurrentCommand;
 }
 
-bool Reader::validatePushCommand(std::string const &_pushType) const {
+bool Reader::validatingCommandParam(std::string const &param) const {
     bool isValid = true;
     size_t i = ~0ULL;
     while (MaxOperandTypes > ++i) {
-        if (!_pushType.compare(0, _validPushParamTypes[i].length(), _validPushParamTypes[i].c_str())) {
-            std::string _pushValue = _pushType.substr(_validPushParamTypes[i].length(), _pushType.length() - _validPushParamTypes[i].length() - 1);
-            const size_t _pushValueTypeParamEndBracketPos = _pushType.find_first_of(')', _validPushParamTypes[i].length());
+        if (!param.compare(0, _validPushParamTypes[i].length(), _validPushParamTypes[i].c_str())) {
+            std::string _pushValue = param.substr(_validPushParamTypes[i].length(), param.length() - _validPushParamTypes[i].length() - 1);
+            const size_t _pushValueTypeParamEndBracketPos = param.find_first_of(')', _validPushParamTypes[i].length());
 
             if (_pushValue.empty()) {
                 std::cout << ERR_PREFIX "missed value for \'" << _validPushParamTypes[i].substr(0, _validPushParamTypes[i].length() - 1) << "\';" <<  std::endl;
                 isValid = false;
-            } else if (_pushValueTypeParamEndBracketPos < _pushType.length() && _pushValueTypeParamEndBracketPos + 1 == _pushType.length()) {
+            } else if (_pushValueTypeParamEndBracketPos < param.length() && _pushValueTypeParamEndBracketPos + 1 == param.length()) {
                 if (3 > i) {
                     isValid = !_pushValue.empty()
                         && std::find_if(_pushValue.begin(), _pushValue.end(), [](char c) { return !std::isdigit(c); }) == _pushValue.end();
@@ -201,21 +200,19 @@ bool Reader::validatePushCommand(std::string const &_pushType) const {
                                 std::cout << ERR_PREFIX "mantissa \'" << exponent << "\' must to contain only digits;" << std::endl;
                             }
                         }
-
-                        std::cout << "exp: " << exponent << " | mantissa: "<< mantissa << std::endl;
                     }
                 }
             } else {
-                if (_pushValueTypeParamEndBracketPos < _pushType.length() && _pushValueTypeParamEndBracketPos + 1 != _pushType.length()) {
-                    std::cout << ERR_PREFIX << "trash detected after ending bracket: \'" << _pushType.substr(_pushValueTypeParamEndBracketPos + 1, _pushType.length() - _pushValueTypeParamEndBracketPos) << "\'; " << std::endl;
+                if (_pushValueTypeParamEndBracketPos < param.length() && _pushValueTypeParamEndBracketPos + 1 != param.length()) {
+                    std::cout << ERR_PREFIX << "trash detected after ending bracket: \'" << param.substr(_pushValueTypeParamEndBracketPos + 1, param.length() - _pushValueTypeParamEndBracketPos) << "\'; " << std::endl;
                 } else {
-                    std::cout << ERR_PREFIX << "in \'" << _pushType << "\' has no ending bracket \')\';" << std::endl;
+                    std::cout << ERR_PREFIX << "in \'" << param << "\' has no ending bracket \')\';" << std::endl;
                 }
                 isValid = false;
             }
             return isValid;
         }
     }
-    std::cout << ERR_PREFIX "\'" << _pushType << "\' is an invalid type for \'push\' command;" << std::endl;
+    std::cout << ERR_PREFIX "\'" << param << "\' is an invalid type in command parameter;" << std::endl;
     return false;
 }
