@@ -31,17 +31,11 @@ std::list<std::string> *Reader::readStandardInput(void) const {
         _hostName = std::string(_hnBuff);
 
         char *_fepBuff = NULL;
-        _fepBuff = getwd(_fepBuff);
-
+        _fepBuff = getcwd(_fepBuff, 64);
         _fullExecutablePath = std::string(_fepBuff);
-        const size_t _lastOfSlashInFEP = _fullExecutablePath.find_last_of('/', 0);
-        if (_lastOfSlashInFEP < _fullExecutablePath.length())
-            _fullExecutablePath = _fullExecutablePath.substr(_lastOfSlashInFEP, _fullExecutablePath.length() - _lastOfSlashInFEP);
     }
 
-    const size_t avmDefaultInputMsgLenght = _hostName.length() + _fullExecutablePath.length();
-
-    std::cout << "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM console input mode " RED "('h' for details)" << WHITE << std::endl;
+    std::cout << "    AVM console input mode " RED "('h' for details)" << WHITE << std::endl;
 
     std::string _tmp;
     bool isValid = true;
@@ -61,7 +55,7 @@ std::list<std::string> *Reader::readStandardInput(void) const {
                     _exit = true;
                     isValid = false;
                 } else if (_tmp == "help" || _tmp == "h") {
-                    std::cout << INVERT "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM help info: " << WHITE << std::endl << std::setiosflags(std::ios::left)
+                    std::cout << INVERT "    AVM help info:   " << WHITE << std::endl << std::setiosflags(std::ios::left)
                         << "| "        "command"       " | " << std::setw(14) << "parameter"     << std::setw(95) << ": description" << '|' << std::endl
                         << "| " INVERT "exit   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
                         << "| " INVERT "print  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
@@ -156,7 +150,7 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
     }
 
     if (false == isValidCurrentCommand) {
-        std::cout << ERR_PREFIX "\'" << command << "\' is an invalid command or miss parameter;" << std::endl;
+        std::cout << ERR_PREFIX "\'" << command << "\' is an invalid command or missed parameter;" << std::endl;
     }
     return isValidCurrentCommand;
 }
@@ -177,7 +171,8 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     isValid = !_pushValue.empty()
                         && std::find_if(_pushValue.begin(), _pushValue.end(), [](char c) { return !std::isdigit(c); }) == _pushValue.end();
                     if (!isValid) {
-                        std::cout << ERR_PREFIX "\'" << _pushValue << "\' must to contain only digits;" << std::endl;
+                        std::cout << ERR_PREFIX << "value in parameter for decimal type must to be only digits "
+                            "and decimal number instead of this: \'" << _pushValue << "\';" << std::endl;
                     }
                 } else {
                     const size_t floatDotInParam = _pushValue.find_first_of('.', 0);
@@ -186,7 +181,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                         if (!exponent.empty()) {
                             isValid = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
                             if (!isValid) {
-                                std::cout << ERR_PREFIX "exponent \'" << exponent << "\' must to contain only digits;" << std::endl;
+                                std::cout << ERR_PREFIX "exponent value \'" << exponent << "\' must to contain only digits;" << std::endl;
                             }
                         }
 
@@ -197,7 +192,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                         } else {
                             isValid = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
                             if (!isValid) {
-                                std::cout << ERR_PREFIX "mantissa \'" << exponent << "\' must to contain only digits;" << std::endl;
+                                std::cout << ERR_PREFIX "mantissa value \'" << exponent << "\' must to contain only digits;" << std::endl;
                             }
                         }
                     }
@@ -206,7 +201,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                 if (_pushValueTypeParamEndBracketPos < param.length() && _pushValueTypeParamEndBracketPos + 1 != param.length()) {
                     std::cout << ERR_PREFIX << "trash detected after ending bracket: \'" << param.substr(_pushValueTypeParamEndBracketPos + 1, param.length() - _pushValueTypeParamEndBracketPos) << "\'; " << std::endl;
                 } else {
-                    std::cout << ERR_PREFIX << "in \'" << param << "\' has no ending bracket \')\';" << std::endl;
+                    std::cout << ERR_PREFIX << "missed ending bracket for \'" << param << "\' \')\';" << std::endl;
                 }
                 isValid = false;
             }

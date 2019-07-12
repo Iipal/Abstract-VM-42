@@ -5,6 +5,7 @@
 #include <list>
 #include <iomanip>
 #include <unistd.h>
+#include <algorithm>
 #include "IOperand.hpp"
 
 #define MAX_VALID_NO_PARAM_COMMANDS 9
