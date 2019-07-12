@@ -11,10 +11,12 @@
 #define MAX_VALID_W_PARAM_COMMANDS 2
 
 #define RED "\033[31m"
+#define BLUE "\033[34m"
 #define WHITE "\033[0m"
+#define GREEN "\033[32m"
 #define INVERT "\033[7m"
 
-#define ERR_PREFIX INVERT "AVM" WHITE " " RED "error" WHITE ": "
+#define ERR_PREFIX INVERT BLUE "AVM" WHITE RED " error" WHITE ": "
 
 class Reader {
 public:
@@ -30,4 +32,9 @@ public:
 private:
     bool validatingReadedCommand(std::string const &command) const;
     bool validatePushCommand(std::string const &_pushType) const;
+
+    static const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS];
+    static const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS];
+
+    static const std::string _validPushParamTypes[MaxOperandTypes];
 };

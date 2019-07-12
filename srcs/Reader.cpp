@@ -1,4 +1,11 @@
-    #include "Reader.hpp"
+#include "Reader.hpp"
+
+const std::string Reader::_validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
+                                                                "add", "sub", "mul", "div", "mod",
+                                                                                    "pop", "dump" };
+const std::string Reader::_validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push ", "assert " };
+const std::string Reader::_validPushParamTypes[MaxOperandTypes] = { "int8(", "int16(", "int32(",
+                                                                            "float(", "double(" };
 
 Reader::Reader() { }
 Reader::Reader(Reader const &copy) { *this = copy; }
@@ -31,23 +38,26 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
     const size_t avmDefaultInputMsgLenght = _hostName.length() + _fullExecutablePath.length();
 
-    std::cout << INVERT "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM CIn mode ('h' for details)" << WHITE << std::endl;
+    std::cout << "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM console input mode " RED "('h' for details)" << WHITE << std::endl;
 
-    bool isValid = true;
     std::string _tmp;
+    bool isValid = true;
     bool _exit = false;
     while (!_exit) {
-        std::cout << RED "@" WHITE << _hostName << " " RED "➜" WHITE " " INVERT << _fullExecutablePath << WHITE ": ";
+        std::cout << INVERT BLUE "AVM" WHITE "@" << _hostName << " " RED "➜" WHITE " " INVERT << _fullExecutablePath << WHITE ": ";
         std::getline(std::cin, _tmp);
-        if (_tmp == ";;") {
-            _exit = true;
-        } else if (std::cin.bad() || std::cin.eof() || std::cin.fail()) {
-            _exit = true;
+        if (std::cin.bad() || std::cin.eof() || std::cin.fail()) {
             std::cout << std::endl << ERR_PREFIX "Error occured in standard input;" << std::endl;
+            _exit = true;
             isValid = false;
-        } else {
-            if (_tmp.size()) {
-                if (_tmp == "help" || _tmp == "h") {
+        } else if (_tmp.size()) {
+            if (_tmp == ";;") {
+                _exit = true;
+            } else {
+                if (_tmp == "quit" || _tmp == "q") {
+                    _exit = true;
+                    isValid = false;
+                } else if (_tmp == "help" || _tmp == "h") {
                     std::cout << INVERT "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM help info: " << WHITE << std::endl << std::setiosflags(std::ios::left)
                         << "| "        "command"       " | " << std::setw(14) << "parameter"     << std::setw(95) << ": description" << '|' << std::endl
                         << "| " INVERT "exit   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
@@ -60,13 +70,10 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                         << "| " INVERT "mul    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
                         << "| " INVERT "div    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
                         << "| " INVERT "mod    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop waiting for any input and try to execute AVM;" << '|' << std::endl
+                        << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and execute AVM;" << '|' << std::endl
+                        << "| " INVERT "quit/q " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and quit without execute AVM;" << '|' << std::endl
                         << "| " INVERT "help/h " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl
-                        << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl
-                        << "| " INVERT "quit/q " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop input and quit from AVM;" << '|' << std::endl;
-                } else if (_tmp == "quit" || _tmp == "q") {
-                    _exit = true;
-                    isValid = false;
+                        << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl;
                 } else {
                     if (validatingReadedCommand(_tmp)) {
                         outCommandsQueue->push_back(_tmp);
@@ -116,11 +123,11 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
             isValid = false;
         }
     } else {
-        std::cout << ERR_PREFIX "invalid file." << std::endl;
+        std::cout << ERR_PREFIX "\'" << fileName << "\' is an invalid file." << std::endl;
         isValid = false;
     }
     if (false == isValid) {
-        std::cout << ERR_PREFIX << "invalid command queue. Cann't execute AVM." << std::endl;
+        std::cout << ERR_PREFIX << "invalid command queue. Can't execute AVM." << std::endl;
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     }
@@ -129,11 +136,6 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
 
 /* private methods */
 bool Reader::validatingReadedCommand(std::string const &command) const {
-    static const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
-                                                            "add", "sub", "mul", "div", "mod",
-                                                            "pop", "dump" };
-    static const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push ", "assert " };
-
     bool isValidCurrentCommand = false;
 
     for (size_t j = ~0ULL; MAX_VALID_NO_PARAM_COMMANDS > ++j;) {
@@ -161,8 +163,6 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
 }
 
 bool Reader::validatePushCommand(std::string const &_pushType) const {
-    static const std::string _validPushParamTypes[MaxOperandTypes] = { "int8(", "int16(", "int32(", "float(", "double(" };
-
     bool isValid = true;
     size_t i = ~0ULL;
     while (MaxOperandTypes > ++i) {
@@ -170,7 +170,10 @@ bool Reader::validatePushCommand(std::string const &_pushType) const {
             std::string _pushValue = _pushType.substr(_validPushParamTypes[i].length(), _pushType.length() - _validPushParamTypes[i].length() - 1);
             const size_t _pushValueTypeParamEndBracketPos = _pushType.find_first_of(')', _validPushParamTypes[i].length());
 
-            if (_pushValueTypeParamEndBracketPos < _pushType.length() && _pushValueTypeParamEndBracketPos + 1 == _pushType.length()) {
+            if (_pushValue.empty()) {
+                std::cout << ERR_PREFIX "missed value for \'" << _validPushParamTypes[i].substr(0, _validPushParamTypes[i].length() - 1) << "\';" <<  std::endl;
+                isValid = false;
+            } else if (_pushValueTypeParamEndBracketPos < _pushType.length() && _pushValueTypeParamEndBracketPos + 1 == _pushType.length()) {
                 if (3 > i) {
                     isValid = !_pushValue.empty()
                         && std::find_if(_pushValue.begin(), _pushValue.end(), [](char c) { return !std::isdigit(c); }) == _pushValue.end();
@@ -191,7 +194,7 @@ bool Reader::validatePushCommand(std::string const &_pushType) const {
                         const std::string mantissa = _pushValue.substr(floatDotInParam + 1, _pushValue.length() - floatDotInParam - 1);
                         if (mantissa.empty() && exponent.empty()) {
                             isValid = false;
-                            std::cout << ERR_PREFIX << "invalid value, at least mantissa must exist" << std::endl;
+                            std::cout << ERR_PREFIX << "invalid value, at least mantissa must exist;" << std::endl;
                         } else {
                             isValid = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
                             if (!isValid) {
@@ -206,13 +209,13 @@ bool Reader::validatePushCommand(std::string const &_pushType) const {
                 if (_pushValueTypeParamEndBracketPos < _pushType.length() && _pushValueTypeParamEndBracketPos + 1 != _pushType.length()) {
                     std::cout << ERR_PREFIX << "trash detected after ending bracket: \'" << _pushType.substr(_pushValueTypeParamEndBracketPos + 1, _pushType.length() - _pushValueTypeParamEndBracketPos) << "\'; " << std::endl;
                 } else {
-                    std::cout << ERR_PREFIX << "in \'" << _pushType << "\' has no ending bracket \')\'" << std::endl;
+                    std::cout << ERR_PREFIX << "in \'" << _pushType << "\' has no ending bracket \')\';" << std::endl;
                 }
                 isValid = false;
             }
             return isValid;
         }
     }
-
+    std::cout << ERR_PREFIX "\'" << _pushType << "\' is an invalid type for \'push\' command;" << std::endl;
     return false;
 }
