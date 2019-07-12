@@ -26,8 +26,8 @@ public:
 
     std::vector<std::string> *readStandardInput(void) const;
     std::vector<std::string> *readFileInput(std::string const &fileName) const;
-    bool validatingReadedCommandQueue(std::vector<std::string> *commandQueue) const;
 
 private:
+    bool validatingReadedCommand(std::string const &command) const;
     bool validatePushCommand(std::string const &_pushType) const;
 };

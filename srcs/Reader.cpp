@@ -32,8 +32,9 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
     const size_t avmDefaultInputMsgLenght = _hostName.length() + _fullExecutablePath.length();
 
+    std::cout << INVERT "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM CIn mode ('h' for details)" << WHITE << std::endl;
+
     bool isValid = true;
-    std::cout << INVERT "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "AVM standard console input mode" << WHITE << std::endl;
     std::string _tmp;
     bool _exit = false;
     while (!_exit) {
@@ -41,7 +42,6 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         std::getline(std::cin, _tmp);
         if (_tmp == ";;") {
             _exit = true;
-            std::cout << INVERT "    " << std::setiosflags(std::ios::left) << std::setw(avmDefaultInputMsgLenght) << "Starts AVM Command Queue Parser:" << WHITE << std::endl;
         } else if (std::cin.bad() || std::cin.eof() || std::cin.fail()) {
             _exit = true;
             std::cout << std::endl << ERR_PREFIX "Error occured in standard input;" << std::endl;
@@ -53,7 +53,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                         << "| "        "command"       " | " << std::setw(14) << "parameter"     << std::setw(95) << ": description" << '|' << std::endl
                         << "| " INVERT "exit   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
                         << "| " INVERT "print  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
-                        << "| " INVERT "assert " WHITE " | " << std::setw(14) << "@exception"    << std::setw(95) << ": check is @exception is true or not;" << '|' << std::endl
+                        << "| " INVERT "assert " WHITE " | " << std::setw(14) << "@exception"    << std::setw(95) << ": check if @exception is true or not;" << '|' << std::endl
                         << "| " INVERT "push   " WHITE " | " << std::setw(14) << "@type(@value)" << std::setw(95) << ": valid @type is int8, int16, int32, float, double; Pushes the @value at the top of the stack;" << '|' << std::endl
                         << "| " INVERT "pop    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the value from the top of the stack;" << '|' << std::endl
                         << "| " INVERT "add    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, adds them, then stacks the result;" << '|' << std::endl
@@ -61,18 +61,26 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                         << "| " INVERT "mul    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
                         << "| " INVERT "div    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
                         << "| " INVERT "mod    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop waiting for any input, start syntax command queue parse and try to execute AVM;" << '|' << std::endl
-                        << "| " INVERT "help   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl
-                        << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ingored;" << '|' << std::endl;
+                        << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop waiting for any input and try to execute AVM;" << '|' << std::endl
+                        << "| " INVERT "help/h " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl
+                        << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl
+                        << "| " INVERT "quit/q " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop input and quit from AVM;" << '|' << std::endl;
+                } else if (_tmp == "quit" || _tmp == "q") {
+                    _exit = true;
+                    isValid = false;
                 } else {
-                    outCommandsQueue->push_back(_tmp);
+                    if (validatingReadedCommand(_tmp)) {
+                        outCommandsQueue->push_back(_tmp);
+                    } else {
+                        std::cout << ERR_PREFIX "invalid command was detected, it's was ignored to add to command queue, try another command ('h')" << std::endl;
+                    }
                 }
             }
         }
     }
 
-    if (!outCommandsQueue->size()) {
-        std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
+    if (isValid && !outCommandsQueue->size()) {
+        std::cout << ERR_PREFIX "command queue is empty, can't execute AVM." << std::endl;
         isValid = false;
     }
     if (!isValid) {
@@ -85,75 +93,67 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 std::vector<std::string> *Reader::readFileInput(std::string const &fileName) const {
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
 
+    bool isValid = true;
     std::fstream _file(fileName);
     if (_file.is_open()) {
         std::string _tmp;
         while (std::getline(_file, _tmp)) {
             if (_tmp.compare(0, 1, ";")) {
-                if (_tmp != "") {
-                    outCommandsQueue->push_back(_tmp);
+                if (_tmp.size()) {
+                    if (validatingReadedCommand(_tmp)) {
+                        outCommandsQueue->push_back(_tmp);
+                    } else {
+                        isValid = false;
+                    }
                 }
             }
         }
-
         if (!outCommandsQueue->size()) {
             std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
-            delete outCommandsQueue;
-            outCommandsQueue = NULL;
+            isValid = false;
         }
     } else  {
         std::cout << "ERROR: Invalid file." << std::endl;
+        isValid = false;
+    }
+    if (false == isValid) {
+        std::cout << ERR_PREFIX << "invalid command queue. Cann't execute AVM." << std::endl;
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     }
     return outCommandsQueue;
 }
 
-bool Reader::validatingReadedCommandQueue(std::vector<std::string> *commandQueue) const {
-    const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
+bool Reader::validatingReadedCommand(std::string const &command) const {
+    static const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
                                                             "add", "sub", "mul", "div", "mod",
                                                             "pop", "dump" };
-    const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push ", "assert " };
+    static const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push ", "assert " };
 
     bool isValidCurrentCommand = false;
-    bool isValidCommandQueue = true;
 
-    size_t i = ~0ULL;
-    while (commandQueue->size() > ++i) {
-        isValidCurrentCommand = false;
-
-        { /* validate commands what hasn't any parameters. */
-            size_t j = ~0ULL;
-            while (MAX_VALID_NO_PARAM_COMMANDS > ++j) {
-                if ((*commandQueue)[i] == _validCommandsNoParams[j]) {
-                    isValidCurrentCommand = true;
-                }
-            }
-        }
-        { /* validate commands what has parameter. */
-            size_t j = ~0ULL;
-            while (MAX_VALID_W_PARAM_COMMANDS > ++j && !isValidCurrentCommand) {
-                if (!(*commandQueue)[i].compare(0, _validCommandsWithParams[j].length(), _validCommandsWithParams[j].c_str())) {
-                    if (!j) { /* if (!j): means if we trying to validate 'push' command */
-                        isValidCurrentCommand
-                            = this->validatePushCommand((*commandQueue)[i].substr(_validCommandsWithParams[j].length(),
-                                _validCommandsWithParams[j].length() - (*commandQueue)[i].length()));
-                    } else {
-                        isValidCurrentCommand = true;
-                    }
-                }
-            }
-        }
-
-        if (false == isValidCurrentCommand) {
-            std::cout << ERR_PREFIX << '\'' << (*commandQueue)[i] << "' is an invalid command;" << std::endl;
-            isValidCommandQueue = false;
+    for (size_t j = ~0ULL; MAX_VALID_NO_PARAM_COMMANDS > ++j;) {
+        if (command == _validCommandsNoParams[j]) {
+            isValidCurrentCommand = true;
         }
     }
-    if (false == isValidCommandQueue) {
-        std::cout << ERR_PREFIX << "invalid command queue, execute AVM is impossible;" << std::endl;
+
+    for (size_t j = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++j;) {
+        if (!command.compare(0, _validCommandsWithParams[j].length(), _validCommandsWithParams[j].c_str())) {
+            if (!j) { /* if (!j): means if we trying to validate 'push' command */
+                isValidCurrentCommand
+                    = this->validatePushCommand(command.substr(_validCommandsWithParams[j].length(),
+                        _validCommandsWithParams[j].length() - command.length()));
+            } else {
+                isValidCurrentCommand = true;
+            }
+        }
     }
-    return isValidCommandQueue;
+
+    if (false == isValidCurrentCommand) {
+        std::cout << ERR_PREFIX "\'" << command << "\' is an invalid command or miss parameter;" << std::endl;
+    }
+    return isValidCurrentCommand;
 }
 
 /* private methods */

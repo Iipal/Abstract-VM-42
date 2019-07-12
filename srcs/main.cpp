@@ -15,8 +15,6 @@ int main(int argc, char *argv[]) {
     }
 
     if (commandQueue) {
-        if (r.validatingReadedCommandQueue(commandQueue)) {
-            std::cout << "start AVM" << std::endl;
-        }
+        std::cout << "start AVM" << std::endl;
     }
 }
