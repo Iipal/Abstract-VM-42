@@ -11,7 +11,6 @@ Reader &Reader::operator=(Reader const &copy) {
 
 std::vector<std::string> *Reader::readStandardInput(void) const {
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
-
     if (!outCommandsQueue) {
         std::cout << ERR_PREFIX "Cannot allocate memory." << std::endl;
         return outCommandsQueue;
@@ -38,7 +37,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
     std::string _tmp;
     bool _exit = false;
     while (!_exit) {
-        std::cout << RED "@" WHITE << _hostName << " " RED "➜" WHITE " " << INVERT << _fullExecutablePath << WHITE << ": ";
+        std::cout << RED "@" WHITE << _hostName << " " RED "➜" WHITE " " INVERT << _fullExecutablePath << WHITE ": ";
         std::getline(std::cin, _tmp);
         if (_tmp == ";;") {
             _exit = true;
@@ -92,6 +91,10 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
 std::vector<std::string> *Reader::readFileInput(std::string const &fileName) const {
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
+    if (!outCommandsQueue) {
+        std::cout << ERR_PREFIX "Cannot allocate memory." << std::endl;
+        return outCommandsQueue;
+    }
 
     bool isValid = true;
     std::fstream _file(fileName);
@@ -113,7 +116,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
             isValid = false;
         }
     } else  {
-        std::cout << "ERROR: Invalid file." << std::endl;
+        std::cout << ERR_PREFIX "invalid file." << std::endl;
         isValid = false;
     }
     if (false == isValid) {
