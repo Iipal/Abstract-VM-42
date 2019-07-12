@@ -115,7 +115,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
             std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
             isValid = false;
         }
-    } else  {
+    } else {
         std::cout << ERR_PREFIX "invalid file." << std::endl;
         isValid = false;
     }
@@ -127,6 +127,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
     return outCommandsQueue;
 }
 
+/* private methods */
 bool Reader::validatingReadedCommand(std::string const &command) const {
     static const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
                                                             "add", "sub", "mul", "div", "mod",
@@ -159,7 +160,6 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
     return isValidCurrentCommand;
 }
 
-/* private methods */
 bool Reader::validatePushCommand(std::string const &_pushType) const {
     static const std::string _validPushParamTypes[MaxOperandTypes] = { "int8(", "int16(", "int32(", "float(", "double(" };
 
@@ -175,10 +175,32 @@ bool Reader::validatePushCommand(std::string const &_pushType) const {
                     isValid = !_pushValue.empty()
                         && std::find_if(_pushValue.begin(), _pushValue.end(), [](char c) { return !std::isdigit(c); }) == _pushValue.end();
                     if (!isValid) {
-                        std::cout << ERR_PREFIX << "\'" << _pushValue << "\' must to contain only digits;" << std::endl;
+                        std::cout << ERR_PREFIX "\'" << _pushValue << "\' must to contain only digits;" << std::endl;
                     }
                 } else {
-                    std::cout << _pushValue << std::endl;
+                    const size_t floatDotInParam = _pushValue.find_first_of('.', 0);
+                    if (floatDotInParam < _pushValue.length()) {
+                        const std::string exponent = _pushValue.substr(0, floatDotInParam);
+                        if (!exponent.empty()) {
+                            isValid = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
+                            if (!isValid) {
+                                std::cout << ERR_PREFIX "exponent \'" << exponent << "\' must to contain only digits;" << std::endl;
+                            }
+                        }
+
+                        const std::string mantissa = _pushValue.substr(floatDotInParam + 1, _pushValue.length() - floatDotInParam - 1);
+                        if (mantissa.empty() && exponent.empty()) {
+                            isValid = false;
+                            std::cout << ERR_PREFIX << "invalid value, at least mantissa must exist" << std::endl;
+                        } else {
+                            isValid = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
+                            if (!isValid) {
+                                std::cout << ERR_PREFIX "mantissa \'" << exponent << "\' must to contain only digits;" << std::endl;
+                            }
+                        }
+
+                        std::cout << "exp: " << exponent << " | mantissa: "<< mantissa << std::endl;
+                    }
                 }
             } else {
                 if (_pushValueTypeParamEndBracketPos < _pushType.length() && _pushValueTypeParamEndBracketPos + 1 != _pushType.length()) {
