@@ -189,15 +189,11 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                         std::cout << ERR_PREFIX << "value \'" << _paramValue <<  "\' in parameter for decimal type must to be only digits and decimal number;" << std::endl;
                     }
                 } else {
-                    const size_t floatDotInParam = _paramValue.find_first_of('.', 0);
+                    bool isValidExponent = true, isValidMantissa = false;
 
-                    bool isValidExponent = true, isValidMantissa = true;
-                    std::string exponent;
-                    if (floatDotInParam < _paramValue.length()) {
-                        exponent = _paramValue.substr(0, floatDotInParam);
-                    } else {
-                        exponent = std::string(_paramValue);
-                    }
+                    const size_t floatDotInParam = _paramValue.find_first_of('.', 0);
+                    const std::string exponent = (floatDotInParam < _paramValue.length())
+                        ? _paramValue.substr(0, floatDotInParam) : std::string(_paramValue);
                     if (!exponent.empty()) {
                         isValidExponent = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
                         if (!isValidExponent) {
@@ -206,6 +202,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     }
                     if (floatDotInParam < _paramValue.length()) {
                         const std::string mantissa = _paramValue.substr(floatDotInParam + 1, _paramValue.length() - floatDotInParam - 1);
+                        isValidMantissa = true;
                         if (mantissa.empty() && exponent.empty()) {
                             isValidMantissa = false;
                             std::cout << ERR_PREFIX << "invalid value, at least mantissa OR exponent must exist;" << std::endl;
