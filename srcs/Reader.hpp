@@ -22,7 +22,7 @@
 #define INVERT "\033[7m"
 #define UNDERLINE "\033[4m"
 
-#define ERR_PREFIX INVERT BLUE "AVM" WHITE " " RED "error" WHITE " " UNDERLINE "↓" WHITE " : "
+#define ERR_PREFIX INVERT BLUE "AVM" WHITE " " RED "error" WHITE "↴  : "
 #define ERR_N_PREFIX(errNum) INVERT BLUE "AVM" WHITE " " RED "error" WHITE "[" UNDERLINE << errNum << WHITE "]: "
 #define WARN_PREFIX INVERT BLUE "AVM" WHITE " " MAGENTA "warning" WHITE ": "
 
