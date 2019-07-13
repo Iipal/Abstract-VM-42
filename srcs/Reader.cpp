@@ -189,13 +189,14 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                         std::cout << ERR_PREFIX << "value \'" << _paramValue <<  "\' in parameter for decimal type must to be only digits and decimal number;" << std::endl;
                     }
                 } else {
-                    bool isValidExponent = true, isValidMantissa = true;
                     const size_t floatDotInParam = _paramValue.find_first_of('.', 0);
+
+                    bool isValidExponent = true, isValidMantissa = true;
                     std::string exponent;
                     if (floatDotInParam < _paramValue.length()) {
                         exponent = _paramValue.substr(0, floatDotInParam);
                     } else {
-                        exponent = _paramValue.substr(0, _paramValue.length());
+                        exponent = std::string(_paramValue);
                     }
                     if (!exponent.empty()) {
                         isValidExponent = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
