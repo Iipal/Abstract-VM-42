@@ -1,0 +1,23 @@
+; -------------
+; example.avm -
+; -------------
+
+push int32(42
+push int32()
+
+add
+
+push float(.)
+
+mul
+
+push double(4f.s);pedor
+push int32(ag)
+
+dump
+
+pop
+
+assert double(42,42)
+
+exit
