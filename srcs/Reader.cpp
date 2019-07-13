@@ -178,45 +178,50 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     isValid = false;
                 }
             } else {
-                    std::cout << ERR_PREFIX << "missed value start bracket \'(\' for \'" << _param << "\';" << std::endl;
-                    isValid = false;
+                std::cout << ERR_PREFIX << "missed value starts bracket \'(\' for \'" << _validPushParamTypes[i] << "\';" << std::endl;
+                isValid = false;
             }
             if (_paramValueTypeParamEndBracketPos < _param.length() && _paramValueTypeParamEndBracketPos + 1 == _param.length()) {
                 if (3 > i) {
                     isValid = !_paramValue.empty()
                         && std::find_if(_paramValue.begin(), _paramValue.end(), [](char c) { return !std::isdigit(c); }) == _paramValue.end();
                     if (!isValid) {
-                        std::cout << ERR_PREFIX << "value in parameter for decimal type must to be only digits "
-                            "and decimal number instead of this: \'" << _paramValue << "\';" << std::endl;
+                        std::cout << ERR_PREFIX << "value \'" << _paramValue <<  "\' in parameter for decimal type must to be only digits and decimal number;" << std::endl;
                     }
                 } else {
+                    bool isValidExponent = true, isValidMantissa = true;
                     const size_t floatDotInParam = _paramValue.find_first_of('.', 0);
+                    std::string exponent;
                     if (floatDotInParam < _paramValue.length()) {
-                        const std::string exponent = _paramValue.substr(0, floatDotInParam);
-                        if (!exponent.empty()) {
-                            isValid = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
-                            if (!isValid) {
-                                std::cout << ERR_PREFIX "exponent value \'" << exponent << "\' must to contain only digits;" << std::endl;
-                            }
+                        exponent = _paramValue.substr(0, floatDotInParam);
+                    } else {
+                        exponent = _paramValue.substr(0, _paramValue.length());
+                    }
+                    if (!exponent.empty()) {
+                        isValidExponent = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
+                        if (!isValidExponent) {
+                            std::cout << ERR_PREFIX "exponent value \'" << exponent << "\' must to contain only digits and decimal number;" << std::endl;
                         }
-
+                    }
+                    if (floatDotInParam < _paramValue.length()) {
                         const std::string mantissa = _paramValue.substr(floatDotInParam + 1, _paramValue.length() - floatDotInParam - 1);
                         if (mantissa.empty() && exponent.empty()) {
-                            isValid = false;
-                            std::cout << ERR_PREFIX << "invalid value, at least mantissa must exist;" << std::endl;
+                            isValidMantissa = false;
+                            std::cout << ERR_PREFIX << "invalid value, at least mantissa OR exponent must exist;" << std::endl;
                         } else {
-                            isValid = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
-                            if (!isValid) {
-                                std::cout << ERR_PREFIX "mantissa value \'" << exponent << "\' must to contain only digits;" << std::endl;
+                            isValidMantissa = std::find_if(mantissa.begin(), mantissa.end(), [](char c) { return !std::isdigit(c); }) == mantissa.end();
+                            if (!isValidMantissa) {
+                                std::cout << ERR_PREFIX "mantissa value \'" << mantissa << "\' must to contain only digits and decimal number;" << std::endl;
                             }
                         }
                     }
+                    return isValidExponent && isValidMantissa;
                 }
             } else {
                 if (_paramValueTypeParamEndBracketPos < _param.length() && _paramValueTypeParamEndBracketPos + 1 != _param.length()) {
                     std::cout << ERR_PREFIX << "trash detected after ending bracket: \'" << _param.substr(_paramValueTypeParamEndBracketPos + 1, _param.length() - _paramValueTypeParamEndBracketPos) << "\'; " << std::endl;
                 } else {
-                    std::cout << ERR_PREFIX << "missed value ending bracket for \'" << _param << "\' \')\';" << std::endl;
+                    std::cout << ERR_PREFIX << "missed value ending bracket for \'" << _validPushParamTypes[i] << "\' \')\';" << std::endl;
                 }
                 isValid = false;
             }
