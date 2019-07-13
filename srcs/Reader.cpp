@@ -3,9 +3,9 @@
 const std::string Reader::_validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
                                                                 "add", "sub", "mul", "div", "mod",
                                                                                     "pop", "dump" };
-const std::string Reader::_validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push ", "assert " };
-const std::string Reader::_validPushParamTypes[MaxOperandTypes] = { "int8(", "int16(", "int32(",
-                                                                            "float(", "double(" };
+const std::string Reader::_validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push", "assert" };
+const std::string Reader::_validPushParamTypes[MaxOperandTypes] = { "int8", "int16", "int32",
+                                                                        "float", "double" };
 
 Reader::Reader() { }
 Reader::Reader(Reader const &copy) { *this = copy; }
@@ -158,26 +158,41 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
 bool Reader::validatingCommandParam(std::string const &param) const {
     bool isValid = true;
     size_t i = ~0ULL;
+    std::string _param = std::string(param);
+    if (param[0] != ' ') {
+        std::cout << ERR_PREFIX << "missed space \' \' after command with _param;" << std::endl;
+        return false;
+    } else {
+        _param = param.substr(1, param.length() - 1);
+    }
     while (MaxOperandTypes > ++i) {
-        if (!param.compare(0, _validPushParamTypes[i].length(), _validPushParamTypes[i].c_str())) {
-            std::string _pushValue = param.substr(_validPushParamTypes[i].length(), param.length() - _validPushParamTypes[i].length() - 1);
-            const size_t _pushValueTypeParamEndBracketPos = param.find_first_of(')', _validPushParamTypes[i].length());
+        if (!_param.compare(0, _validPushParamTypes[i].length(), _validPushParamTypes[i].c_str())) {
+            const size_t _paramValueTypeParamStartBracketPos = _param.find_first_of('(', _validPushParamTypes[i].length());
+            const size_t _paramValueTypeParamEndBracketPos = _param.find_first_of(')', _validPushParamTypes[i].length());
+            std::string _paramValue;
 
-            if (_pushValue.empty()) {
-                std::cout << ERR_PREFIX "missed value for \'" << _validPushParamTypes[i].substr(0, _validPushParamTypes[i].length() - 1) << "\';" <<  std::endl;
-                isValid = false;
-            } else if (_pushValueTypeParamEndBracketPos < param.length() && _pushValueTypeParamEndBracketPos + 1 == param.length()) {
+            if (_paramValueTypeParamStartBracketPos < _param.length()) {
+                _paramValue = _param.substr(_validPushParamTypes[i].length() + 1, _param.length() - _validPushParamTypes[i].length() - 2);
+                if (_paramValue.empty()) {
+                    std::cout << ERR_PREFIX "missed value for \'" << _validPushParamTypes[i].substr(0, _validPushParamTypes[i].length()) << "\';" <<  std::endl;
+                    isValid = false;
+                }
+            } else {
+                    std::cout << ERR_PREFIX << "missed value start bracket \'(\' for \'" << _param << "\';" << std::endl;
+                    isValid = false;
+            }
+            if (_paramValueTypeParamEndBracketPos < _param.length() && _paramValueTypeParamEndBracketPos + 1 == _param.length()) {
                 if (3 > i) {
-                    isValid = !_pushValue.empty()
-                        && std::find_if(_pushValue.begin(), _pushValue.end(), [](char c) { return !std::isdigit(c); }) == _pushValue.end();
+                    isValid = !_paramValue.empty()
+                        && std::find_if(_paramValue.begin(), _paramValue.end(), [](char c) { return !std::isdigit(c); }) == _paramValue.end();
                     if (!isValid) {
                         std::cout << ERR_PREFIX << "value in parameter for decimal type must to be only digits "
-                            "and decimal number instead of this: \'" << _pushValue << "\';" << std::endl;
+                            "and decimal number instead of this: \'" << _paramValue << "\';" << std::endl;
                     }
                 } else {
-                    const size_t floatDotInParam = _pushValue.find_first_of('.', 0);
-                    if (floatDotInParam < _pushValue.length()) {
-                        const std::string exponent = _pushValue.substr(0, floatDotInParam);
+                    const size_t floatDotInParam = _paramValue.find_first_of('.', 0);
+                    if (floatDotInParam < _paramValue.length()) {
+                        const std::string exponent = _paramValue.substr(0, floatDotInParam);
                         if (!exponent.empty()) {
                             isValid = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
                             if (!isValid) {
@@ -185,7 +200,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                             }
                         }
 
-                        const std::string mantissa = _pushValue.substr(floatDotInParam + 1, _pushValue.length() - floatDotInParam - 1);
+                        const std::string mantissa = _paramValue.substr(floatDotInParam + 1, _paramValue.length() - floatDotInParam - 1);
                         if (mantissa.empty() && exponent.empty()) {
                             isValid = false;
                             std::cout << ERR_PREFIX << "invalid value, at least mantissa must exist;" << std::endl;
@@ -198,16 +213,16 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     }
                 }
             } else {
-                if (_pushValueTypeParamEndBracketPos < param.length() && _pushValueTypeParamEndBracketPos + 1 != param.length()) {
-                    std::cout << ERR_PREFIX << "trash detected after ending bracket: \'" << param.substr(_pushValueTypeParamEndBracketPos + 1, param.length() - _pushValueTypeParamEndBracketPos) << "\'; " << std::endl;
+                if (_paramValueTypeParamEndBracketPos < _param.length() && _paramValueTypeParamEndBracketPos + 1 != _param.length()) {
+                    std::cout << ERR_PREFIX << "trash detected after ending bracket: \'" << _param.substr(_paramValueTypeParamEndBracketPos + 1, _param.length() - _paramValueTypeParamEndBracketPos) << "\'; " << std::endl;
                 } else {
-                    std::cout << ERR_PREFIX << "missed ending bracket for \'" << param << "\' \')\';" << std::endl;
+                    std::cout << ERR_PREFIX << "missed value ending bracket for \'" << _param << "\' \')\';" << std::endl;
                 }
                 isValid = false;
             }
             return isValid;
         }
     }
-    std::cout << ERR_PREFIX "\'" << param << "\' is an invalid type in command parameter;" << std::endl;
+    std::cout << ERR_PREFIX "\'" << _param << "\' is an invalid type in command parameter;" << std::endl;
     return false;
 }
