@@ -7,7 +7,11 @@ int main(int argc, char *argv[]) {
     std::list<std::string> *commandQueue = NULL;
 
     if (!argc) {
-        commandQueue = r.readStandardInput();
+        if (isatty(fileno(stdin))) {
+            commandQueue = r.readStandardInput();
+        } else {
+            commandQueue = r.readPipeInput();
+        }
     } else if (1 == argc) {
         commandQueue = r.readFileInput(*argv);
     } else {

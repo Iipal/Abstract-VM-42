@@ -19,7 +19,7 @@ Reader &Reader::operator=(Reader const &copy) {
 std::list<std::string> *Reader::readStandardInput(void) const {
     std::list<std::string> *outCommandsQueue = new std::list<std::string>();
     if (!outCommandsQueue) {
-        std::cout << ERR_PREFIX "Cannot allocate memory." << std::endl;
+        std::cout << ERR_PREFIX "cannot allocate memory;" << std::endl;
         return outCommandsQueue;
     }
 
@@ -35,7 +35,7 @@ std::list<std::string> *Reader::readStandardInput(void) const {
         _fullExecutablePath = std::string(_fepBuff);
     }
 
-    std::cout << "    AVM console input mode " RED "('h' for details)" << WHITE << std::endl;
+    std::cout << "    AVM console input mode " RED "('h' for details):" << WHITE << std::endl;
 
     std::string _tmp;
     bool isValid = true;
@@ -75,7 +75,7 @@ std::list<std::string> *Reader::readStandardInput(void) const {
                     if (validatingReadedCommand(_tmp)) {
                         outCommandsQueue->push_front(_tmp);
                     } else {
-                        std::cout << ERR_PREFIX "invalid command was detected, it's was ignored to add to command queue, try another command ('h')" << std::endl;
+                        std::cout << ERR_PREFIX "invalid command was detected, it's was ignored to add to command queue, try another command ('h');" << std::endl;
                     }
                 }
             }
@@ -83,7 +83,7 @@ std::list<std::string> *Reader::readStandardInput(void) const {
     }
 
     if (isValid && !outCommandsQueue->size()) {
-        std::cout << ERR_PREFIX "command queue is empty, can't execute AVM." << std::endl;
+        std::cout << ERR_PREFIX "command queue is empty, can't execute AVM;" << std::endl;
         isValid = false;
     }
     if (!isValid) {
@@ -93,20 +93,61 @@ std::list<std::string> *Reader::readStandardInput(void) const {
     return outCommandsQueue;
 }
 
+std::list<std::string> *Reader::readPipeInput(void) const {
+    std::list<std::string> *outCommandsQueue = new std::list<std::string>();
+    if (!outCommandsQueue) {
+        std::cout << ERR_PREFIX "cannot allocate memory;" << std::endl;
+        return outCommandsQueue;
+    }
+
+    std::cout << "    AVM input from a pipe mode: " << std::endl;
+
+    std::string _tmp;
+    bool isValid = true;
+    bool _exit = false;
+    while (!_exit) {
+        if (!std::getline(std::cin, _tmp)) {
+            _exit = true;
+        } else if (std::cin.bad() || std::cin.eof() || std::cin.fail()) {
+            std::cout << std::endl << ERR_PREFIX "error occured in pipe input;" << std::endl;
+            _exit = true;
+            isValid = false;
+        } else if (_tmp.size()) {
+            if (_tmp.compare(0, 1, ";")) {
+                if (validatingReadedCommand(_tmp)) {
+                    outCommandsQueue->push_front(_tmp);
+                } else  {
+                    isValid = false;
+                }
+            }
+        }
+    }
+    if (false == isValid) {
+        std::cout << ERR_PREFIX "invalid command queue. can't execute AVM;" << std::endl;
+        delete outCommandsQueue;
+        outCommandsQueue = NULL;
+    } else {
+        std::cout << GREEN "successful" WHITE " read command queue from a pipe;" << std::endl;
+    }
+    return outCommandsQueue;
+}
+
 std::list<std::string> *Reader::readFileInput(std::string const &fileName) const {
     std::list<std::string> *outCommandsQueue = new std::list<std::string>();
     if (!outCommandsQueue) {
-        std::cout << ERR_PREFIX "Cannot allocate memory." << std::endl;
+        std::cout << ERR_PREFIX "cannot allocate memory;" << std::endl;
         return outCommandsQueue;
     }
+
+    std::cout << "    AVM input from a file mode: " << std::endl;
 
     bool isValid = true;
     std::fstream _file(fileName);
     if (_file.is_open()) {
         std::string _tmp;
         while (std::getline(_file, _tmp)) {
-            if (_tmp.compare(0, 1, ";")) {
-                if (_tmp.size()) {
+            if (_tmp.size()) {
+                if (_tmp.compare(0, 1, ";")) {
                     if (validatingReadedCommand(_tmp)) {
                         outCommandsQueue->push_front(_tmp);
                     } else {
@@ -115,8 +156,8 @@ std::list<std::string> *Reader::readFileInput(std::string const &fileName) const
                 }
             }
         }
-        if (!outCommandsQueue->size()) {
-            std::cout << ERR_PREFIX << "command queue is empty, can't execute AVM." << std::endl;
+        if (isValid && !outCommandsQueue->size()) {
+            std::cout << ERR_PREFIX "command queue is empty, can't execute AVM." << std::endl;
             isValid = false;
         }
     } else {
@@ -124,9 +165,11 @@ std::list<std::string> *Reader::readFileInput(std::string const &fileName) const
         isValid = false;
     }
     if (false == isValid) {
-        std::cout << ERR_PREFIX << "invalid command queue. Can't execute AVM." << std::endl;
+        std::cout << ERR_PREFIX "invalid command queue. Can't execute AVM." << std::endl;
         delete outCommandsQueue;
         outCommandsQueue = NULL;
+    } else {
+        std::cout << GREEN "successful" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl;
     }
     return outCommandsQueue;
 }

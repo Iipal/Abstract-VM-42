@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <unistd.h>
 #include <algorithm>
+#include <stdio.h>
 #include "IOperand.hpp"
 
 #define MAX_VALID_NO_PARAM_COMMANDS 9
@@ -28,6 +29,7 @@ public:
     Reader &operator=(Reader const &copy);
 
     std::list<std::string> *readStandardInput(void) const;
+    std::list<std::string> *readPipeInput(void) const;
     std::list<std::string> *readFileInput(std::string const &fileName) const;
 
 private:
