@@ -193,7 +193,15 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
     }
 
     if (false == isValidCurrentCommand) {
-        std::cout << ERR_PREFIX "\'" << command << "\' is an invalid command or missed parameter;" << std::endl;
+        std::cout << ERR_PREFIX "\'";
+
+        const size_t isSpaceInCommand = command.find_first_of(' ', 0);
+        if (isSpaceInCommand < command.length()) {
+            std::cout << command.substr(0, isSpaceInCommand);
+        } else {
+            std::cout << command;
+        }
+        std::cout  << "\' is an invalid command or missed\\invalid parameter;" << std::endl;
     }
     return isValidCurrentCommand;
 }
@@ -202,8 +210,8 @@ bool Reader::validatingCommandParam(std::string const &param) const {
     bool isValid = true;
     size_t i = ~0ULL;
     std::string _param = std::string(param);
-    if (param[0] != ' ') {
-        std::cout << ERR_PREFIX << "missed space \' \' after command with _param;" << std::endl;
+    if (' ' != param[0]) {
+        std::cout << ERR_PREFIX "missed space \' \' after command with param;" << std::endl;
         return false;
     } else {
         _param = param.substr(1, param.length() - 1);
@@ -217,8 +225,12 @@ bool Reader::validatingCommandParam(std::string const &param) const {
             if (_paramValueTypeParamStartBracketPos < _param.length()) {
                 _paramValue = _param.substr(_validPushParamTypes[i].length() + 1, _param.length() - _validPushParamTypes[i].length() - 2);
                 if (_paramValue.empty()) {
-                    std::cout << ERR_PREFIX "missed value for \'" << _validPushParamTypes[i].substr(0, _validPushParamTypes[i].length()) << "\';" <<  std::endl;
+                    std::cout << ERR_PREFIX "missed value for \'" << _validPushParamTypes[i] << "\';" <<  std::endl;
                     isValid = false;
+                } else {
+                    if ('-' == _paramValue[0]) {
+                        _paramValue = _paramValue.substr(1, _paramValue.length() - 1);
+                    }
                 }
             } else {
                 std::cout << ERR_PREFIX << "missed value starts bracket \'(\' for \'" << _validPushParamTypes[i] << "\';" << std::endl;
@@ -269,6 +281,6 @@ bool Reader::validatingCommandParam(std::string const &param) const {
             return isValid;
         }
     }
-    std::cout << ERR_PREFIX "\'" << _param << "\' is an invalid type in command parameter;" << std::endl;
+    std::cout << ERR_PREFIX "invalid type \'" << _param << "\' in command parameter;" << std::endl;
     return false;
 }
