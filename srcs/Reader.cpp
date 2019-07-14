@@ -49,7 +49,7 @@ std::list<std::string> *Reader::readStandardInput(void) const {
     bool isValidInput = true;
     bool _exit = false;
     while (!_exit) {
-        std::cout << INVERT BLUE "AVM" WHITE "@" INVERT << _hostName << WHITE " "
+        std::cout << BLUE "AVM" WHITE "@" INVERT << _hostName << WHITE " "
             << (isValidLastCommand ? GREEN : RED) << "➜" WHITE " " << _fullExecutablePath << WHITE ": ";
         isValidLastCommand = true;
 
@@ -134,7 +134,7 @@ std::list<std::string> *Reader::readPipeInput(void) const {
 std::list<std::string> *Reader::readFileInput(std::string const &fileName) const {
     std::list<std::string> *outCommandsQueue = new std::list<std::string>();
     if (!outCommandsQueue) {
-        std::cout << ERR_PREFIX "cannot allocate memory;" << std::endl;
+        std::cout << ERR_REPORT_PREFIX "cannot allocate memory;" << std::endl;
         return outCommandsQueue;
     }
 
@@ -152,19 +152,19 @@ std::list<std::string> *Reader::readFileInput(std::string const &fileName) const
                     if (validatingReadedCommand(_tmp)) {
                         outCommandsQueue->push_front(_tmp);
                     } else {
-                        std::cout << ERR_PREFIX << "problem was detected at line: [ " UNDERLINE
-                            << readedLines << WHITE " ] - \'" UNDERLINE CYAN << _tmp << WHITE "\';" << std::endl;
+                        std::cout << REPORT_PREFIX "problem was detected at line: [ " UNDERLINE
+                            << std::setw(5) << readedLines << WHITE " ];" << std::endl;
                         isValid = false;
                     }
                 }
             }
         }
         if (isValid && !outCommandsQueue->size()) {
-            std::cout << ERR_PREFIX "command queue is empty, can't execute AVM." << std::endl;
+            std::cout << ERR_REPORT_PREFIX "command queue is empty, can't execute AVM." << std::endl;
             isValid = false;
         }
     } else {
-        std::cout << ERR_PREFIX "\'" << fileName << "\' is an invalid file." << std::endl;
+        std::cout << ERR_REPORT_PREFIX "\'" << fileName << "\' is an invalid file." << std::endl;
         isValid = false;
     }
     if (false == isValid) {
@@ -234,10 +234,18 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
 bool Reader::validatingCommandParam(std::string const &param) const {
     std::string _param = std::string(param);
     if (' ' != param[0]) {
-        std::cout << ERR_PREFIX "missed space \'" INVERT " " WHITE "\' after command with param;" << std::endl;
+        std::cout << ERR_REPORT_PREFIX "missed space \'" INVERT " " WHITE "\' after command with param;" << std::endl;
         return false;
     } else {
         _param = param.substr(1, param.length() - 1);
+    }
+    {
+        const size_t additionalErrorSpaceInParamter = _param.find_first_of(' ', 0);
+        if (additionalErrorSpaceInParamter < _param.length()) {
+            std::cout << ERR_REPORT_PREFIX "detected invalid space in command parameter \'" INVERT
+                << _param.substr(additionalErrorSpaceInParamter - 1, _param.length() - additionalErrorSpaceInParamter) << WHITE "\';" << std::endl;
+            return false;
+        }
     }
 
     bool isValid = true;
@@ -251,7 +259,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
             if (_paramValueTypeParamStartBracketPos < _param.length()) {
                 _paramValue = _param.substr(_validPushParamTypes[i].length() + 1, _param.length() - _validPushParamTypes[i].length() - 2);
                 if (_paramValue.empty()) {
-                    std::cout << ERR_PREFIX "missed value for \'" INVERT << _validPushParamTypes[i] << WHITE "\';" <<  std::endl;
+                    std::cout << ERR_REPORT_PREFIX "missed value for \'" INVERT << _validPushParamTypes[i] << WHITE "\';" <<  std::endl;
                     isValid = false;
                 } else {
                     if ('-' == _paramValue[0]) {
@@ -259,7 +267,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     }
                 }
             } else {
-                std::cout << ERR_PREFIX << "missed value starts bracket \'" INVERT "(" WHITE "\' for \'" INVERT
+                std::cout << ERR_REPORT_PREFIX << "missed value starts bracket \'" INVERT "(" WHITE "\' for \'" INVERT
                     << _validPushParamTypes[i] << WHITE "\';" << std::endl;
                 isValid = false;
             }
@@ -268,7 +276,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     isValid = !_paramValue.empty()
                         && std::find_if(_paramValue.begin(), _paramValue.end(), [](char c) { return !std::isdigit(c); }) == _paramValue.end();
                     if (!isValid) {
-                        std::cout << ERR_PREFIX << "value \'" INVERT << _paramValue
+                        std::cout << ERR_REPORT_PREFIX << "value \'" INVERT << _paramValue
                             << WHITE "\' in parameter for decimal type must to be only digits and decimal number;" << std::endl;
                     }
                 } else {
@@ -280,7 +288,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     if (!exponent.empty()) {
                         isValidExponent = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
                         if (!isValidExponent) {
-                            std::cout << ERR_PREFIX "exponent value \'" INVERT << exponent
+                            std::cout << ERR_REPORT_PREFIX "exponent value \'" INVERT << exponent
                                 << WHITE "\' must to contain only digits and decimal number;" << std::endl;
                         }
                     }
@@ -289,11 +297,11 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                         isValidMantissa = true;
                         if (mantissa.empty() && exponent.empty()) {
                             isValidMantissa = false;
-                            std::cout << ERR_PREFIX << "invalid value, at least mantissa OR exponent must exist;" << std::endl;
+                            std::cout << ERR_REPORT_PREFIX << "invalid value, at least mantissa OR exponent must exist;" << std::endl;
                         } else {
                             isValidMantissa = std::find_if(mantissa.begin(), mantissa.end(), [](char c) { return !std::isdigit(c); }) == mantissa.end();
                             if (!isValidMantissa) {
-                                std::cout << ERR_PREFIX "mantissa value \'" INVERT << mantissa
+                                std::cout << ERR_REPORT_PREFIX "mantissa value \'" INVERT << mantissa
                                     << WHITE "\' must to contain only digits and decimal number;" << std::endl;
                             }
                         }
@@ -302,11 +310,11 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                 }
             } else {
                 if (_paramValueTypeParamEndBracketPos < _param.length() && _paramValueTypeParamEndBracketPos + 1 != _param.length()) {
-                    std::cout << ERR_PREFIX << "trash detected after ending bracket: \'" INVERT
+                    std::cout << ERR_REPORT_PREFIX << "trash detected after ending bracket: \'" INVERT
                         << _param.substr(_paramValueTypeParamEndBracketPos + 1, _param.length() - _paramValueTypeParamEndBracketPos)
                         << WHITE "\';" << std::endl;
                 } else {
-                    std::cout << ERR_PREFIX << "missed value ending bracket for \'" INVERT << _validPushParamTypes[i]
+                    std::cout << ERR_REPORT_PREFIX << "missed value ending bracket for \'" INVERT << _validPushParamTypes[i]
                         << WHITE "\' \'" INVERT ")" WHITE "\';" << std::endl;
                 }
                 isValid = false;
@@ -315,7 +323,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
         }
     }
     const size_t _paramStartBrakcet = _param.find_first_of('(', 0);
-    std::cout << ERR_PREFIX "invalid type \'" INVERT;
+    std::cout << ERR_REPORT_PREFIX "invalid type \'" INVERT;
     if (_paramStartBrakcet < _param.length()) {
         std::cout << _param.substr(0, _paramStartBrakcet);
     } else {

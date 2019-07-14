@@ -22,9 +22,10 @@
 #define INVERT "\033[7m"
 #define UNDERLINE "\033[4m"
 
-#define ERR_PREFIX INVERT BLUE "AVM" WHITE " " RED "error" WHITE "↴  : "
-#define ERR_N_PREFIX(errNum) INVERT BLUE "AVM" WHITE " " RED "error" WHITE "[" UNDERLINE << errNum << WHITE "]: "
-#define WARN_PREFIX INVERT BLUE "AVM" WHITE " " MAGENTA "warning" WHITE ": "
+#define ERR_N_PREFIX(errNum) CYAN "AVM" WHITE " " RED "error" WHITE << " [" UNDERLINE << std::setw(6) << errNum << WHITE "]: "
+#define ERR_REPORT_PREFIX CYAN "AVM" WHITE " " RED "error-report" WHITE "⤵ : "
+#define REPORT_PREFIX CYAN "AVM" WHITE " " CYAN "report" WHITE "      ⤴ : "
+#define WARN_PREFIX CYAN "AVM" WHITE " " MAGENTA "warning" WHITE "     → : "
 
 class Reader {
 public:
