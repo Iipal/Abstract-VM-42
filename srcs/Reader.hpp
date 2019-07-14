@@ -41,6 +41,7 @@ public:
 private:
     bool validatingReadedCommand(std::string const &command) const;
     bool validatingCommandParam(std::string const &_pushType) const;
+    void printHelpInfoForStandardInput(void) const;
 
     static const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS];
     static const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS];

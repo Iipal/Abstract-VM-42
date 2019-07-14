@@ -1,5 +1,6 @@
 #include "Reader.hpp"
 
+/* global\static\const variables for class: */
 size_t Reader::globalErrorsCounter = 0;
 const std::string Reader::_validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
                                                                 "add", "sub", "mul", "div", "mod",
@@ -8,6 +9,7 @@ const std::string Reader::_validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] =
 const std::string Reader::_validPushParamTypes[MaxOperandTypes] = { "int8", "int16", "int32",
                                                                         "float", "double" };
 
+/* public methods */
 Reader::Reader() { }
 Reader::Reader(Reader const &copy) { *this = copy; }
 Reader::~Reader() { }
@@ -30,10 +32,14 @@ std::list<std::string> *Reader::readStandardInput(void) const {
         char _hnBuff[32];
         gethostname(_hnBuff, 32);
         _hostName = std::string(_hnBuff);
+        if (_hostName.empty()) {
+            _hostName = std::string("AVM host");
+        }
 
         char *_fepBuff = NULL;
         _fepBuff = getcwd(_fepBuff, 64);
         _fullExecutablePath = std::string(_fepBuff);
+        _fullExecutablePath.append("/avm");
     }
 
     std::cout << "    AVM console input mode " RED "('h' for details):" << WHITE << std::endl;
@@ -43,8 +49,8 @@ std::list<std::string> *Reader::readStandardInput(void) const {
     bool isValidInput = true;
     bool _exit = false;
     while (!_exit) {
-        std::cout << INVERT BLUE "AVM" WHITE "@" << _hostName << " "
-            << (isValidLastCommand ? GREEN : RED) << "➜" WHITE " " INVERT << _fullExecutablePath << WHITE ": ";
+        std::cout << INVERT BLUE "AVM" WHITE "@" INVERT << _hostName << WHITE " "
+            << (isValidLastCommand ? GREEN : RED) << "➜" WHITE " " << _fullExecutablePath << WHITE ": ";
         isValidLastCommand = true;
 
         std::getline(std::cin, _tmp);
@@ -60,27 +66,13 @@ std::list<std::string> *Reader::readStandardInput(void) const {
                     _exit = true;
                     isValidInput = false;
                 } else if (_tmp == "help" || _tmp == "h") {
-                    std::cout << INVERT "    AVM help info:   " << WHITE << std::endl << std::setiosflags(std::ios::left)
-                        << "| "        "command"       " | " << std::setw(14) << "parameter"     << std::setw(95) << ": description" << '|' << std::endl
-                        << "| " INVERT "exit   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
-                        << "| " INVERT "print  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
-                        << "| " INVERT "assert " WHITE " | " << std::setw(14) << "@exception"    << std::setw(95) << ": check if @exception is true or not;" << '|' << std::endl
-                        << "| " INVERT "push   " WHITE " | " << std::setw(14) << "@type(@value)" << std::setw(95) << ": valid @type is int8, int16, int32, float, double; Pushes the @value at the top of the stack;" << '|' << std::endl
-                        << "| " INVERT "pop    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the value from the top of the stack;" << '|' << std::endl
-                        << "| " INVERT "add    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, adds them, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT "sub    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, subtracts them, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT "mul    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT "div    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT "mod    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
-                        << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and execute AVM;" << '|' << std::endl
-                        << "| " INVERT "quit/q " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and quit without execute AVM;" << '|' << std::endl
-                        << "| " INVERT "help/h " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl
-                        << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl;
+                    printHelpInfoForStandardInput();
                 } else {
                     if ((isValidLastCommand = validatingReadedCommand(_tmp))) {
                         outCommandsQueue->push_front(_tmp);
                     } else {
-                        std::cout << WARN_PREFIX "invalid command was detected, it's was ignored to add to command queue, try another command ('h');" << std::endl;
+                        std::cout << WARN_PREFIX "invalid command was detected, "
+                            "it's was ignored to add to command queue, try another command ('h');" << std::endl;
                     }
                 }
             }
@@ -106,7 +98,7 @@ std::list<std::string> *Reader::readPipeInput(void) const {
         return outCommandsQueue;
     }
 
-    std::cout << "    AVM " BLUE "pipe" WHITE " input mode: " << std::endl;
+    std::cout << "    AVM " BLUE "pipe" WHITE " input mode:" << std::endl;
 
     std::string _tmp;
     bool isValid = true;
@@ -146,7 +138,7 @@ std::list<std::string> *Reader::readFileInput(std::string const &fileName) const
         return outCommandsQueue;
     }
 
-    std::cout << "    AVM " CYAN "file" WHITE " input mode: " << std::endl;
+    std::cout << "    AVM " CYAN "file" WHITE " input mode:" << std::endl;
 
     bool isValid = true;
     std::fstream _file(fileName);
@@ -187,6 +179,25 @@ std::list<std::string> *Reader::readFileInput(std::string const &fileName) const
 }
 
 /* private methods */
+void Reader::printHelpInfoForStandardInput(void) const {
+    std::cout << INVERT "    AVM help info:    " << WHITE << std::endl << std::setiosflags(std::ios::left)
+        << "| "        "command"       " | " << std::setw(14) << "parameter"     << std::setw(95) << ": description" << '|' << std::endl
+        << "| " INVERT "exit   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
+        << "| " INVERT "print  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
+        << "| " INVERT "assert " WHITE " | " << std::setw(14) << "@exception"    << std::setw(95) << ": check if @exception is true or not;" << '|' << std::endl
+        << "| " INVERT "push   " WHITE " | " << std::setw(14) << "@type(@value)" << std::setw(95) << ": valid @type is int8, int16, int32, float, double; Pushes the @value at the top of the stack;" << '|' << std::endl
+        << "| " INVERT "pop    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the value from the top of the stack;" << '|' << std::endl
+        << "| " INVERT "add    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, adds them, then stacks the result;" << '|' << std::endl
+        << "| " INVERT "sub    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, subtracts them, then stacks the result;" << '|' << std::endl
+        << "| " INVERT "mul    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
+        << "| " INVERT "div    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
+        << "| " INVERT "mod    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
+        << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and execute AVM;" << '|' << std::endl
+        << "| " INVERT "quit/q " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and quit without execute AVM;" << '|' << std::endl
+        << "| " INVERT "help/h " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl
+        << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl;
+}
+
 bool Reader::validatingReadedCommand(std::string const &command) const {
     const size_t previousErrorsCounterState = Reader::globalErrorsCounter;
     bool isValidCurrentCommand = false;
@@ -214,7 +225,7 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
         } else {
             std::cout << command;
         }
-        std::cout  << WHITE "\' is an invalid command or missed\\invalid parameter;" << std::endl;
+        std::cout  << WHITE "\' is an invalid command ('" CYAN << command << WHITE "');" << std::endl;
         ++Reader::globalErrorsCounter;
     }
     return isValidCurrentCommand;
@@ -303,6 +314,13 @@ bool Reader::validatingCommandParam(std::string const &param) const {
             return isValid;
         }
     }
-    std::cout << ERR_PREFIX "invalid type \'" INVERT << _param << WHITE "\' in command parameter;" << std::endl;
+    const size_t _paramStartBrakcet = _param.find_first_of('(', 0);
+    std::cout << ERR_PREFIX "invalid type \'" INVERT;
+    if (_paramStartBrakcet < _param.length()) {
+        std::cout << _param.substr(0, _paramStartBrakcet);
+    } else {
+        std::cout << _param;
+    }
+    std::cout << WHITE "\' in command parameter;" << std::endl;
     return false;
 }
