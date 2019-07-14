@@ -62,10 +62,10 @@ std::list<std::string> *Reader::readStandardInput(void) const {
             if (_tmp == ";;") {
                 _exit = true;
             } else {
-                if (_tmp == "quit" || _tmp == "q") {
+                if (_tmp == "q" || _tmp == "quit") {
                     _exit = true;
                     isValidInput = false;
-                } else if (_tmp == "help" || _tmp == "h") {
+                } else if (_tmp == "h" || _tmp == "help") {
                     printHelpInfoForStandardInput();
                 } else {
                     if ((isValidLastCommand = validatingReadedCommand(_tmp))) {
@@ -120,6 +120,7 @@ std::list<std::string> *Reader::readPipeInput(void) const {
             }
         }
     }
+
     if (false == isValid) {
         std::cout << ERR_N_PREFIX(++Reader::globalErrorsCounter)
             "invalid command queue. " UNDERLINE RED "can't execute AVM" WHITE ";" << std::endl;
