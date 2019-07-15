@@ -1,7 +1,7 @@
 #include "Reader.hpp"
 #include "OperandFactory.hpp"
 
-void processingCommandQueue(std::vector<std::string> *commandQueue);
+bool processingCommandQueue(std::vector<std::string> *commandQueue);
 
 int main(int argc, char *argv[]) {
     --argc; ++argv;
@@ -22,6 +22,8 @@ int main(int argc, char *argv[]) {
     }
 
     if (commandQueue) {
+        std::cout << "    AVM " INVERT GREEN "start" WHITE " executing:" << std::endl;
         processingCommandQueue(commandQueue);
+        delete commandQueue;
     }
 }

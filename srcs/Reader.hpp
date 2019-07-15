@@ -9,9 +9,6 @@
 #include <stdio.h>
 #include "IOperand.hpp"
 
-#define MAX_VALID_NO_PARAM_COMMANDS 9
-#define MAX_VALID_W_PARAM_COMMANDS 2
-
 #define RED "\033[31m"
 #define BLUE "\033[34m"
 #define CYAN "\033[36m"
@@ -39,13 +36,12 @@ public:
     std::vector<std::string> *readPipeInput(void) const;
     std::vector<std::string> *readFileInput(std::string const &fileName) const;
 
+    static size_t incrementGlobalErrorsCounter(void) { return ++Reader::globalErrorsCounter; }
+
 private:
     bool validatingReadedCommand(std::string const &command) const;
     bool validatingCommandParam(std::string const &_pushType) const;
     void printHelpInfoForStandardInput(void) const;
-
-    static const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS];
-    static const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS];
 
     static size_t globalErrorsCounter;
 };

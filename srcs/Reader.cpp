@@ -2,10 +2,6 @@
 
 /* global\static\const variables for class: */
 size_t Reader::globalErrorsCounter = 0;
-const std::string Reader::_validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = { "print", "exit",
-                                                                "add", "sub", "mul", "div", "mod",
-                                                                                    "pop", "dump" };
-const std::string Reader::_validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push", "assert" };
 
 /* public methods */
 Reader::Reader() { }
@@ -20,7 +16,7 @@ Reader &Reader::operator=(Reader const &copy) {
 std::vector<std::string> *Reader::readStandardInput(void) const {
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
     if (!outCommandsQueue) {
-        std::cout << ERR_N_PREFIX(++Reader::globalErrorsCounter) "cannot allocate memory;" << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "cannot allocate memory;" << std::endl;
         return outCommandsQueue;
     }
 
@@ -53,7 +49,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
         std::getline(std::cin, _tmp);
         if (std::cin.bad() || std::cin.eof() || std::cin.fail()) {
-            std::cout << std::endl << ERR_N_PREFIX(++Reader::globalErrorsCounter) "Error occured in standard input;" << std::endl;
+            std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "Error occured in standard input;" << std::endl;
             _exit = true;
             isValidInput = false;
         } else if (_tmp.size()) {
@@ -78,7 +74,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
     }
 
     if (isValidInput && !outCommandsQueue->size()) {
-        std::cout << ERR_N_PREFIX(++Reader::globalErrorsCounter)
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "command queue is empty, " UNDERLINE RED "can't execute AVM" WHITE ";" << std::endl;
         isValidInput = false;
     }
@@ -92,7 +88,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 std::vector<std::string> *Reader::readPipeInput(void) const {
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
     if (!outCommandsQueue) {
-        std::cout << ERR_N_PREFIX(++Reader::globalErrorsCounter) "cannot allocate memory;" << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "cannot allocate memory;" << std::endl;
         return outCommandsQueue;
     }
 
@@ -104,8 +100,8 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
     while (!_exit) {
         if (!std::getline(std::cin, _tmp)) {
             _exit = true;
-        } else if (std::cin.bad() || std::cin.eof() || std::cin.fail()) {
-            std::cout << std::endl << ERR_N_PREFIX(++Reader::globalErrorsCounter) "error occured in pipe input;" << std::endl;
+        } else if (std::cin.bad() || std::cin.fail()) {
+            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "error occured in pipe input;" << std::endl;
             _exit = true;
             isValid = false;
         } else if (_tmp.size()) {
@@ -120,12 +116,12 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
     }
 
     if (false == isValid) {
-        std::cout << ERR_N_PREFIX(++Reader::globalErrorsCounter)
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "invalid command queue. " UNDERLINE RED "can't execute AVM" WHITE ";" << std::endl;
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
-        std::cout << GREEN "successful" WHITE " read command queue from a pipe;" << std::endl;
+        std::cout << "  " GREEN "SUCCESSFUL" WHITE " read command queue from a pipe;" << std::endl;
     }
     return outCommandsQueue;
 }
@@ -167,12 +163,12 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
         isValid = false;
     }
     if (false == isValid) {
-        std::cout << ERR_N_PREFIX(++Reader::globalErrorsCounter)
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "invalid command queue. " UNDERLINE RED "can't execute AVM" WHITE ";" << std::endl;
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
-        std::cout << GREEN "successful" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl;
+        std::cout << "  " GREEN "SUCCESSFUL" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl;
     }
     return outCommandsQueue;
 }
@@ -234,7 +230,7 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
             std::cout << _command;
         }
         std::cout  << WHITE "\' is an invalid command ('" CYAN << _command << WHITE "');" << std::endl;
-        ++Reader::globalErrorsCounter;
+        Reader::incrementGlobalErrorsCounter();
     }
     return isValidCurrentCommand;
 }
