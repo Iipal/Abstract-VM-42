@@ -58,22 +58,20 @@ std::list<std::string> *Reader::readStandardInput(void) const {
             std::cout << std::endl << ERR_N_PREFIX(++Reader::globalErrorsCounter) "Error occured in standard input;" << std::endl;
             _exit = true;
             isValidInput = false;
-        } else if (_tmp.size()) {
-            if (_tmp == ";;") {
+        } else if (_tmp.size() && ';' != _tmp[0]) {
+            if (";;" == _tmp) {
                 _exit = true;
+            } else if ("q" == _tmp || "quit" == _tmp) {
+                _exit = true;
+                isValidInput = false;
+            } else if ("h" == _tmp || "help" == _tmp) {
+                printHelpInfoForStandardInput();
             } else {
-                if (_tmp == "q" || _tmp == "quit") {
-                    _exit = true;
-                    isValidInput = false;
-                } else if (_tmp == "h" || _tmp == "help") {
-                    printHelpInfoForStandardInput();
+                if ((isValidLastCommand = validatingReadedCommand(_tmp))) {
+                    outCommandsQueue->push_front(_tmp);
                 } else {
-                    if ((isValidLastCommand = validatingReadedCommand(_tmp))) {
-                        outCommandsQueue->push_front(_tmp);
-                    } else {
-                        std::cout << WARN_PREFIX "invalid command was detected, "
-                            "it's was ignored to add to command queue, try another command ('h');" << std::endl;
-                    }
+                    std::cout << WARN_PREFIX "invalid command was detected, "
+                        "it's was ignored to add to command queue, try another command ('h');" << std::endl;
                 }
             }
         }
@@ -204,30 +202,38 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
     const size_t previousErrorsCounterState = Reader::globalErrorsCounter;
     bool isValidCurrentCommand = false;
 
-    for (size_t j = ~0ULL; MAX_VALID_NO_PARAM_COMMANDS > ++j;) {
-        if (command == _validCommandsNoParams[j]) {
+    std::string _command = std::string(command);
+    {
+        const size_t isCommentaryExistAfterCommand = command.find_first_of(';', 0);
+        if (isCommentaryExistAfterCommand < command.length()) {
+            _command = command.substr(0, isCommentaryExistAfterCommand);
+        }
+    }
+
+    for (size_t i = ~0ULL; MAX_VALID_NO_PARAM_COMMANDS > ++i;) {
+        if (_command == _validCommandsNoParams[i]) {
             isValidCurrentCommand = true;
         }
     }
 
-    for (size_t j = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++j;) {
-        if (!command.compare(0, _validCommandsWithParams[j].length(), _validCommandsWithParams[j].c_str())) {
+    for (size_t i = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++i;) {
+        if (!_command.compare(0, _validCommandsWithParams[i].length(), _validCommandsWithParams[i].c_str())) {
             isValidCurrentCommand
-                = this->validatingCommandParam(command.substr(_validCommandsWithParams[j].length(),
-                    _validCommandsWithParams[j].length() - command.length()));
+                = this->validatingCommandParam(_command.substr(_validCommandsWithParams[i].length(),
+                    _validCommandsWithParams[i].length() - _command.length()));
         }
     }
 
     if (false == isValidCurrentCommand) {
         std::cout << ERR_N_PREFIX(previousErrorsCounterState + 1) "\'" INVERT;
 
-        const size_t isSpaceInCommand = command.find_first_of(' ', 0);
-        if (isSpaceInCommand < command.length()) {
-            std::cout << command.substr(0, isSpaceInCommand);
+        const size_t isSpaceInCommand = _command.find_first_of(' ', 0);
+        if (isSpaceInCommand < _command.length()) {
+            std::cout << _command.substr(0, isSpaceInCommand);
         } else {
-            std::cout << command;
+            std::cout << _command;
         }
-        std::cout  << WHITE "\' is an invalid command ('" CYAN << command << WHITE "');" << std::endl;
+        std::cout  << WHITE "\' is an invalid command ('" CYAN << _command << WHITE "');" << std::endl;
         ++Reader::globalErrorsCounter;
     }
     return isValidCurrentCommand;
