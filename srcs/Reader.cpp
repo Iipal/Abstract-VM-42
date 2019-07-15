@@ -6,8 +6,6 @@ const std::string Reader::_validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS] = 
                                                                 "add", "sub", "mul", "div", "mod",
                                                                                     "pop", "dump" };
 const std::string Reader::_validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS] = { "push", "assert" };
-const std::string Reader::_validPushParamTypes[MaxOperandTypes] = { "int8", "int16", "int32",
-                                                                        "float", "double" };
 
 /* public methods */
 Reader::Reader() { }
@@ -19,8 +17,8 @@ Reader &Reader::operator=(Reader const &copy) {
     return *this;
 }
 
-std::list<std::string> *Reader::readStandardInput(void) const {
-    std::list<std::string> *outCommandsQueue = new std::list<std::string>();
+std::vector<std::string> *Reader::readStandardInput(void) const {
+    std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
     if (!outCommandsQueue) {
         std::cout << ERR_N_PREFIX(++Reader::globalErrorsCounter) "cannot allocate memory;" << std::endl;
         return outCommandsQueue;
@@ -58,8 +56,10 @@ std::list<std::string> *Reader::readStandardInput(void) const {
             std::cout << std::endl << ERR_N_PREFIX(++Reader::globalErrorsCounter) "Error occured in standard input;" << std::endl;
             _exit = true;
             isValidInput = false;
-        } else if (_tmp.size() && ';' != _tmp[0]) {
-            if (";;" == _tmp) {
+        } else if (_tmp.size()) {
+            if (';' == _tmp[0] && ';' != _tmp[1]) {
+                // just do nothing;
+            } else if (";;" == _tmp) {
                 _exit = true;
             } else if ("q" == _tmp || "quit" == _tmp) {
                 _exit = true;
@@ -68,7 +68,7 @@ std::list<std::string> *Reader::readStandardInput(void) const {
                 printHelpInfoForStandardInput();
             } else {
                 if ((isValidLastCommand = validatingReadedCommand(_tmp))) {
-                    outCommandsQueue->push_front(_tmp);
+                    outCommandsQueue->push_back(_tmp);
                 } else {
                     std::cout << WARN_PREFIX "invalid command was detected, "
                         "it's was ignored to add to command queue, try another command ('h');" << std::endl;
@@ -89,8 +89,8 @@ std::list<std::string> *Reader::readStandardInput(void) const {
     return outCommandsQueue;
 }
 
-std::list<std::string> *Reader::readPipeInput(void) const {
-    std::list<std::string> *outCommandsQueue = new std::list<std::string>();
+std::vector<std::string> *Reader::readPipeInput(void) const {
+    std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
     if (!outCommandsQueue) {
         std::cout << ERR_N_PREFIX(++Reader::globalErrorsCounter) "cannot allocate memory;" << std::endl;
         return outCommandsQueue;
@@ -111,7 +111,7 @@ std::list<std::string> *Reader::readPipeInput(void) const {
         } else if (_tmp.size()) {
             if (_tmp.compare(0, 1, ";")) {
                 if (validatingReadedCommand(_tmp)) {
-                    outCommandsQueue->push_front(_tmp);
+                    outCommandsQueue->push_back(_tmp);
                 } else {
                     isValid = false;
                 }
@@ -130,8 +130,8 @@ std::list<std::string> *Reader::readPipeInput(void) const {
     return outCommandsQueue;
 }
 
-std::list<std::string> *Reader::readFileInput(std::string const &fileName) const {
-    std::list<std::string> *outCommandsQueue = new std::list<std::string>();
+std::vector<std::string> *Reader::readFileInput(std::string const &fileName) const {
+    std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
     if (!outCommandsQueue) {
         std::cout << ERR_REPORT_PREFIX "cannot allocate memory;" << std::endl;
         return outCommandsQueue;
@@ -149,7 +149,7 @@ std::list<std::string> *Reader::readFileInput(std::string const &fileName) const
             if (_tmp.size()) {
                 if (_tmp.compare(0, 1, ";")) {
                     if (validatingReadedCommand(_tmp)) {
-                        outCommandsQueue->push_front(_tmp);
+                        outCommandsQueue->push_back(_tmp);
                     } else {
                         std::cout << REPORT_PREFIX "problem was detected at line: [ " UNDERLINE
                             << std::setw(5) << readedLines << WHITE " ];" << std::endl;

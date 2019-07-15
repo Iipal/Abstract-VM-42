@@ -1,10 +1,13 @@
 #include "Reader.hpp"
+#include "OperandFactory.hpp"
+
+void processingCommandQueue(std::vector<std::string> *commandQueue);
 
 int main(int argc, char *argv[]) {
     --argc; ++argv;
 
     Reader r;
-    std::list<std::string> *commandQueue = NULL;
+    std::vector<std::string> *commandQueue = NULL;
 
     if (!argc) {
         if (isatty(fileno(stdin))) {
@@ -19,6 +22,6 @@ int main(int argc, char *argv[]) {
     }
 
     if (commandQueue) {
-        std::cout << "start AVM" << std::endl;
+        processingCommandQueue(commandQueue);
     }
 }

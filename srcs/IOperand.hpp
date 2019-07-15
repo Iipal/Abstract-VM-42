@@ -3,6 +3,9 @@
 #include <iostream>
 
 enum eOperandType { Int8, Int16, Int32, Float, Double, MaxOperandTypes };
+static const std::string _validPushParamTypes[MaxOperandTypes] = { "int8", "int16", "int32",
+                                                                        "float", "double" };
+
 
 class IOperand {
 public:

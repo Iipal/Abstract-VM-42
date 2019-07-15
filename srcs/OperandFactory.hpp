@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IOperand.hpp"
+#include "Operand.hpp"
 
 class OperandFactory {
 public:
@@ -24,6 +24,8 @@ public:
 private:
 
     typedef IOperand const* (OperandFactory::*fnptrCreateOperand)(std::string const &) const;
+    static const fnptrCreateOperand fnptrCreateOperands[MaxOperandTypes];
+
     IOperand const *createInt8  (std::string const &value) const;
     IOperand const *createInt16 (std::string const &value) const;
     IOperand const *createInt32 (std::string const &value) const;

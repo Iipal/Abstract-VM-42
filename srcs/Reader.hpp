@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <list>
+#include <vector>
 #include <iomanip>
 #include <unistd.h>
 #include <algorithm>
@@ -35,9 +35,9 @@ public:
 
     Reader &operator=(Reader const &copy);
 
-    std::list<std::string> *readStandardInput(void) const;
-    std::list<std::string> *readPipeInput(void) const;
-    std::list<std::string> *readFileInput(std::string const &fileName) const;
+    std::vector<std::string> *readStandardInput(void) const;
+    std::vector<std::string> *readPipeInput(void) const;
+    std::vector<std::string> *readFileInput(std::string const &fileName) const;
 
 private:
     bool validatingReadedCommand(std::string const &command) const;
@@ -47,6 +47,5 @@ private:
     static const std::string _validCommandsNoParams[MAX_VALID_NO_PARAM_COMMANDS];
     static const std::string _validCommandsWithParams[MAX_VALID_W_PARAM_COMMANDS];
 
-    static const std::string _validPushParamTypes[MaxOperandTypes];
     static size_t globalErrorsCounter;
 };
