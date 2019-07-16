@@ -16,6 +16,7 @@ bool processPush(std::string const &param, std::list<IOperand const*> *const o) 
     }
 
     o->push_front(gOFactory.createOperand(_oType, _paramValue));
+    std::cout << "pushed " << _paramType << "(" << _paramValue << ") to top of the stack;" << std::endl;
     return true;
 }
 
@@ -35,10 +36,15 @@ bool processAssert(std::string const &param, std::list<IOperand const*> *const o
     }
 
     std::list<IOperand const*>::const_iterator it = o->begin();
-    if ((*it)->getType() != _oType || (*it)->toString() != _paramValue) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) << UNDERLINE "assert " << param
-        << WHITE " is " RED "false" WHITE ". STOP executing." << std::endl;
+    std::string _itParamValue = (*it)->toString();
+    _itParamValue = _itParamValue.substr(_itParamValue.find_first_of('(', 0) + 1,
+        _itParamValue.find_first_of(')', 0) - (_itParamValue.find_first_of('(', 0) + 1));
+    if ((*it)->getType() != _oType || _itParamValue != _paramValue) {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) << UNDERLINE "assert "
+            << param << WHITE " is " RED "false" WHITE ";" << std::endl;
         return false;
+    } else {
+        std::cout << "assert " << param << " is " GREEN "true" WHITE ";" << std::endl;
     }
     return true;
 }

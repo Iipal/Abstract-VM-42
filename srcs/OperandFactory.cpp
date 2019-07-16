@@ -44,5 +44,5 @@ IOperand const *OperandFactory::createFloat(std::string const &value) const {
     return new Operand<float>(Float, value, std::stof(value));
 }
 IOperand const *OperandFactory::createDouble(std::string const &value) const {
-    return new Operand<double>(Float, value, std::stod(value));
+    return new Operand<double>(Double, value, std::stod(value));
 }

@@ -16,8 +16,8 @@ bool processingCommandQueue(std::vector<std::string> *commandQueue) {
 
         for (size_t i = ~0ULL; MAX_VALID_NO_PARAM_COMMANDS > ++i;) {
             if (*it == _validCommandsNoParams[i]) {
-                if (*it == "exit") {
-                    _exit = isValid = true;
+                if (i == 1) {
+                    _exit = true;
                 } else {
                     isValid = fnptrsCommandsNoParam[i](&operands);
                 }

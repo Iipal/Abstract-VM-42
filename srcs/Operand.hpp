@@ -31,7 +31,7 @@ public:
         }
         return _precision;
     }
-    eOperandType getType (void) const { return this->_type; }
+    eOperandType getType(void) const { return this->_type; }
 
     IOperand const *operator+(IOperand const &rhs) const { (void)rhs; return new Operand; }
     IOperand const *operator-(IOperand const &rhs) const { (void)rhs; return new Operand; }
@@ -39,7 +39,19 @@ public:
     IOperand const *operator/(IOperand const &rhs) const { (void)rhs; return new Operand; }
     IOperand const *operator%(IOperand const &rhs) const { (void)rhs; return new Operand; }
 
-    std::string const &toString(void) const { return this->_valueStr; }
+    std::string const toString(void) const {
+        std::string _typeStr;
+        {
+            size_t i = ~0ULL;
+            while (MaxOperandTypes > ++i) {
+                if (this->_type == i) {
+                    _typeStr = std::string(_validPushParamTypes[i]);
+                    break ;
+                }
+            }
+        }
+        return _typeStr + "(" + this->_valueStr + ")";
+    }
 private:
     eOperandType _type;
     std::string _valueStr;

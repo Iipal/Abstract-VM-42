@@ -1,7 +1,6 @@
 #include "Reader.hpp"
 #include "OperandFactory.hpp"
-
-bool processingCommandQueue(std::vector<std::string> *commandQueue);
+#include "processingCommandQueue/processingCommandQueue.hpp"
 
 int main(int argc, char *argv[]) {
     --argc; ++argv;
