@@ -53,9 +53,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
             _exit = true;
             isValidInput = false;
         } else if (_tmp.size()) {
-            if (';' == _tmp[0] && ';' != _tmp[1]) {
-                // just do nothing;
-            } else if (";;" == _tmp) {
+            if (";;" == _tmp) {
                 _exit = true;
             } else if ("q" == _tmp || "quit" == _tmp) {
                 _exit = true;
@@ -63,6 +61,10 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
             } else if ("h" == _tmp || "help" == _tmp) {
                 printHelpInfoForStandardInput();
             } else {
+                const size_t isCommentaryExistAfterCommand = _tmp.find_first_of(';', 0);
+                if (isCommentaryExistAfterCommand < _tmp.length()) {
+                    _tmp = _tmp.substr(0, isCommentaryExistAfterCommand);
+                }
                 if ((isValidLastCommand = validatingReadedCommand(_tmp))) {
                     outCommandsQueue->push_back(_tmp);
                 } else {
@@ -106,6 +108,10 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
             isValid = false;
         } else if (_tmp.size()) {
             if (_tmp.compare(0, 1, ";")) {
+                const size_t isCommentaryExistAfterCommand = _tmp.find_first_of(';', 0);
+                if (isCommentaryExistAfterCommand < _tmp.length()) {
+                    _tmp = _tmp.substr(0, isCommentaryExistAfterCommand);
+                }
                 if (validatingReadedCommand(_tmp)) {
                     outCommandsQueue->push_back(_tmp);
                 } else {
@@ -144,6 +150,10 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
             ++readedLines;
             if (_tmp.size()) {
                 if (_tmp.compare(0, 1, ";")) {
+                    const size_t isCommentaryExistAfterCommand = _tmp.find_first_of(';', 0);
+                    if (isCommentaryExistAfterCommand < _tmp.length()) {
+                        _tmp = _tmp.substr(0, isCommentaryExistAfterCommand);
+                    }
                     if (validatingReadedCommand(_tmp)) {
                         outCommandsQueue->push_back(_tmp);
                     } else {
@@ -198,38 +208,30 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
     const size_t previousErrorsCounterState = Reader::globalErrorsCounter;
     bool isValidCurrentCommand = false;
 
-    std::string _command = std::string(command);
-    {
-        const size_t isCommentaryExistAfterCommand = command.find_first_of(';', 0);
-        if (isCommentaryExistAfterCommand < command.length()) {
-            _command = command.substr(0, isCommentaryExistAfterCommand);
-        }
-    }
-
     for (size_t i = ~0ULL; MAX_VALID_NO_PARAM_COMMANDS > ++i;) {
-        if (_command == _validCommandsNoParams[i]) {
+        if (command == _validCommandsNoParams[i]) {
             isValidCurrentCommand = true;
         }
     }
 
     for (size_t i = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++i;) {
-        if (!_command.compare(0, _validCommandsWithParams[i].length(), _validCommandsWithParams[i].c_str())) {
+        if (!command.compare(0, _validCommandsWithParams[i].length(), _validCommandsWithParams[i].c_str())) {
             isValidCurrentCommand
-                = this->validatingCommandParam(_command.substr(_validCommandsWithParams[i].length(),
-                    _validCommandsWithParams[i].length() - _command.length()));
+                = this->validatingCommandParam(command.substr(_validCommandsWithParams[i].length(),
+                    _validCommandsWithParams[i].length() - command.length()));
         }
     }
 
     if (false == isValidCurrentCommand) {
         std::cout << ERR_N_PREFIX(previousErrorsCounterState + 1) "\'" INVERT;
 
-        const size_t isSpaceInCommand = _command.find_first_of(' ', 0);
-        if (isSpaceInCommand < _command.length()) {
-            std::cout << _command.substr(0, isSpaceInCommand);
+        const size_t isSpaceInCommand = command.find_first_of(' ', 0);
+        if (isSpaceInCommand < command.length()) {
+            std::cout << command.substr(0, isSpaceInCommand);
         } else {
-            std::cout << _command;
+            std::cout << command;
         }
-        std::cout  << WHITE "\' is an invalid command ('" CYAN << _command << WHITE "');" << std::endl;
+        std::cout  << WHITE "\' is an invalid command ('" CYAN << command << WHITE "');" << std::endl;
         Reader::incrementGlobalErrorsCounter();
     }
     return isValidCurrentCommand;
