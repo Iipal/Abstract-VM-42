@@ -13,7 +13,20 @@ bool processPrint(std::list<IOperand const*> *const o) {
 
 bool processExit(std::list<IOperand const*> *const o) { (void)o; return true; }
 
-bool processAdd(std::list<IOperand const*> *const o) { (void)o; return true; }
+bool processAdd(std::list<IOperand const*> *const o) {
+    if  (2 > o->size()) {
+        std::cout << WARN_PREFIX "can't process \'add\' command because at the top of ther stack less then 2 values;" << std::endl;
+        return false;
+    } else {
+        IOperand const *leftOperand = *(o->begin());
+        IOperand const *rightOperand = *(++o->begin());
+        IOperand const *result = *leftOperand + *rightOperand;
+        o->pop_front();
+        o->pop_front();
+        o->push_front(result);
+    }
+    return true;
+}
 bool processSub(std::list<IOperand const*> *const o) { (void)o; return true; }
 bool processMul(std::list<IOperand const*> *const o) { (void)o; return true; }
 bool processDiv(std::list<IOperand const*> *const o) { (void)o; return true; }
