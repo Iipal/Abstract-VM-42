@@ -72,7 +72,8 @@ public:
         if (Float > _newType) {
             int64_t _rhsValue = std::stol(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
             if (!_rhsValue || !this->_value) {
-                std::cout << ERR_REPORT_PREFIX "one of the operands is zero. can't multiply to zero;" << std::endl;
+                std::cout << RED "error" WHITE << std::endl
+                    << ERR_REPORT_PREFIX "one of the operands is zero. can't multiply to zero;" << std::endl;
             } else {
                 int32_t _newValue = _rhsValue * this->_value;
                 out = gOFactory.createOperand(_newType, std::to_string(_newValue));
@@ -80,7 +81,8 @@ public:
         } else {
             double _rhsValue = std::stod(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
             if (!_rhsValue || !this->_value) {
-                std::cout << ERR_REPORT_PREFIX "one of the operands is zero. can't multiply to zero;" << std::endl;
+                std::cout << RED "error" WHITE << std::endl
+                    << ERR_REPORT_PREFIX "one of the operands is zero. can't multiply to zero;" << std::endl;
             } else {
                 double _newValue = _rhsValue * this->_value;
                 out = gOFactory.createOperand(_newType, std::to_string(_newValue));
@@ -95,7 +97,8 @@ public:
         if (Float > _newType) {
             int64_t _rhsValue = std::stol(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
             if (!_rhsValue || !this->_value) {
-                std::cout << ERR_REPORT_PREFIX "one of the operands is zero. can't divide to zero;" << std::endl;
+                std::cout << RED "error" WHITE << std::endl
+                    << ERR_REPORT_PREFIX "one of the operands is zero. can't divide to zero;" << std::endl;
             } else {
                 int32_t _newValue = _rhsValue / this->_value;
                 out = gOFactory.createOperand(_newType, std::to_string(_newValue));
@@ -103,7 +106,8 @@ public:
         } else {
             double _rhsValue = std::stod(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
             if (!_rhsValue || !this->_value) {
-                std::cout << ERR_REPORT_PREFIX "one of the operands is zero. can't divide to zero;" << std::endl;
+                std::cout << RED "error" WHITE << std::endl
+                    << ERR_REPORT_PREFIX "one of the operands is zero. can't divide to zero;" << std::endl;
             } else {
                 double _newValue = _rhsValue / this->_value;
                 out = gOFactory.createOperand(_newType, std::to_string(_newValue));
@@ -117,13 +121,15 @@ public:
         if (Float > _newType) {
             int32_t _rhsValue = std::stol(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
             if (!_rhsValue || !this->_value) {
-                std::cout << ERR_REPORT_PREFIX "one of the operands is zero. can't module to zero;" << std::endl;
+                std::cout << RED "error" WHITE << std::endl
+                    << ERR_REPORT_PREFIX "one of the operands is zero. can't module to zero;" << std::endl;
             } else {
                 int32_t _newValue = static_cast<int32_t>(_rhsValue) % static_cast<int32_t>(this->_value);
                 out = gOFactory.createOperand(_newType, std::to_string(_newValue));
             }
         } else {
-            std::cout << ERR_REPORT_PREFIX "at least one of the operand is double(or float), can't process module for floating point values;" << std::endl;
+            std::cout << RED "error" WHITE << std::endl
+                << ERR_REPORT_PREFIX "at least one of the operands is double(or float), can't process module for floating point values;" << std::endl;
         }
         return out;
     }

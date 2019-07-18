@@ -15,7 +15,8 @@ bool processExit(std::list<IOperand const*> *const o) { (void)o; return true; }
 
 bool processAdd(std::list<IOperand const*> *const o) {
     if  (2 > o->size()) {
-        std::cout << WARN_PREFIX "can't process \'add\' command because at the top of the stack less then 2 values;" << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+            "can't process \'add\' command because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
         IOperand const *leftOperand = *(o->begin());
@@ -36,7 +37,8 @@ bool processAdd(std::list<IOperand const*> *const o) {
 
 bool processSub(std::list<IOperand const*> *const o) {
     if (2 > o->size()) {
-        std::cout << WARN_PREFIX "can't process \'sub\' command because at the top of the stack less then 2 values;" << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+            "can't process \'sub\' command because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
         IOperand const *leftOperand = *(o->begin());
@@ -57,7 +59,8 @@ bool processSub(std::list<IOperand const*> *const o) {
 
 bool processMul(std::list<IOperand const*> *const o) {
     if (2 > o->size()) {
-        std::cout << WARN_PREFIX "can't process \'mul\' command because at the top of the stack less then 2 values;" << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+            "can't process \'mul\' command because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
         IOperand const *leftOperand = *(o->begin());
@@ -78,7 +81,8 @@ bool processMul(std::list<IOperand const*> *const o) {
 
 bool processDiv(std::list<IOperand const*> *const o) {
     if (2 > o->size()) {
-        std::cout << WARN_PREFIX "can't process \'div\' command because at the top of the stack less then 2 values;" << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+            "can't process \'div\' command because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
         IOperand const *leftOperand = *(o->begin());
@@ -97,7 +101,27 @@ bool processDiv(std::list<IOperand const*> *const o) {
     return true;
 }
 
-bool processMod(std::list<IOperand const*> *const o) { (void)o; return true; }
+bool processMod(std::list<IOperand const*> *const o) {
+    if (2 > o->size()) {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+            "can't process \'mod\' command because at the top of the stack less then 2 values;" << std::endl;
+        return false;
+    } else {
+        IOperand const *leftOperand = *(o->begin());
+        IOperand const *rightOperand = *(++o->begin());
+        std::cout << "\'" << (*leftOperand).toString() << "\' \'mod\' \'" << (*rightOperand).toString() << "\' = ";
+        IOperand const *result = *leftOperand % *rightOperand;
+        if (result) {
+            std::cout << "\'" << (*result).toString() << "\';" << std::endl;
+            o->pop_front(); o->pop_front();
+            o->push_front(result);
+        } else {
+            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'mod\';" << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
 
 bool processPop(std::list<IOperand const*> *const o) {
     if (!o->size()) {

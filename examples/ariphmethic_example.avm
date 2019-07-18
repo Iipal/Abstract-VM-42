@@ -1,0 +1,17 @@
+push int32(42)
+add
+push int32(1)
+add
+sub
+push int32(1)
+sub
+mul
+push float(1.1)
+mul
+div
+push float(2.0)
+div
+mod
+push int32(42)
+mod
+exit

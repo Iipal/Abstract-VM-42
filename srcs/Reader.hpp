@@ -38,6 +38,7 @@ public:
     std::vector<std::string> *readFileInput(std::string const &fileName) const;
 
     static size_t incrementGlobalErrorsCounter(void) { return ++Reader::globalErrorsCounter; }
+    static size_t const &getGlobalErrorsCounter(void) { return Reader::globalErrorsCounter; }
 
 private:
     bool validatingReadedCommand(std::string const &command) const;

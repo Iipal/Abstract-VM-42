@@ -9,7 +9,9 @@ bool processingCommandQueue(std::vector<std::string> *commandQueue) {
     while (!_exit && commandQueue->end() != it) {
         for (size_t i = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++i;) {
             if (!(*it).compare(0, _validCommandsWithParams[i].length(), _validCommandsWithParams[i])) {
-                isValid = fnptrsCommandsWParam[i]((*it).substr(_validCommandsWithParams[i].length() + 1, (*it).length() - 2), &operands);
+                if (!fnptrsCommandsWParam[i]((*it).substr(_validCommandsWithParams[i].length() + 1, (*it).length() - 2), &operands)) {
+                    isValid = false;
+                }
                 break ;
             }
         }
@@ -19,7 +21,9 @@ bool processingCommandQueue(std::vector<std::string> *commandQueue) {
                 if (i == 1) {
                     _exit = true;
                 } else {
-                    isValid = fnptrsCommandsNoParam[i](&operands);
+                    if (!fnptrsCommandsNoParam[i](&operands)) {
+                        isValid = false;
+                    }
                 }
                 break ;
             }
@@ -30,8 +34,13 @@ bool processingCommandQueue(std::vector<std::string> *commandQueue) {
 
     if (isValid && _exit) {
         std::cout << "  " GREEN "SUCCESSFUL" WHITE " executed AVM;" << std::endl;
-    } else if (!_exit) {
+    } else if (isValid && !_exit) {
         std::cout << WARN_PREFIX "executing was stopped without \'" CYAN "exit" WHITE "\';" << std::endl;
+    } else {
+        std::cout << CYAN "AVM" WHITE " " MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
+            << std::setw(6) << Reader::getGlobalErrorsCounter()
+            << WHITE "] errors was occured while AVM was executed,"
+            " try to fix all error reports above for successful AVM work;" << std::endl;
     }
     return isValid;
 }
