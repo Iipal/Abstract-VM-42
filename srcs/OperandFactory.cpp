@@ -1,4 +1,5 @@
 #include "OperandFactory.hpp"
+#include "Operand.hpp"
 
 const OperandFactory::fnptrCreateOperand
  OperandFactory::fnptrCreateOperands[MaxOperandTypes] = {

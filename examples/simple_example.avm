@@ -2,5 +2,8 @@ push int32(2)
 push int32(3)
 add
 assert int32(5)
+push double(4.2)
+add
 dump
-exit;
+sub
+exit

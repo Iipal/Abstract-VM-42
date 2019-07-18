@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Operand.hpp"
+#include "IOperand.hpp"
 
 class OperandFactory {
 public:
