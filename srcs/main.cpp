@@ -1,6 +1,6 @@
 #include "Reader.hpp"
 #include "OperandFactory.hpp"
-#include "processingCommandQueue/processingCommandQueue.hpp"
+#include "AVMLaunchProcessing.hpp"
 
 int main(int argc, char *argv[]) {
     --argc; ++argv;
@@ -21,8 +21,9 @@ int main(int argc, char *argv[]) {
     }
 
     if (commandQueue) {
+        AVMLaunchProcessing avmLP;
         std::cout << "    AVM " INVERT GREEN "start" WHITE " executing:" << std::endl;
-        processingCommandQueue(commandQueue);
+        avmLP.startProcessing(commandQueue);
         delete commandQueue;
     }
 }

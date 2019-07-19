@@ -32,8 +32,7 @@ IOperand const *OperandFactory::createOperand(eOperandType type, std::string con
 
 /* private methods */
 IOperand const *OperandFactory::createInt8(std::string const &value) const {
-    std::string _tempValue = std::string(value);
-    return new Operand<int8_t>(Int8, value, std::stoi(_tempValue));
+    return new Operand<int8_t>(Int8, value, std::stoi(value));
 }
 IOperand const *OperandFactory::createInt16(std::string const &value) const {
     return new Operand<int16_t>(Int16, value, std::stoi(value));

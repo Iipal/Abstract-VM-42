@@ -135,18 +135,21 @@ public:
         return out;
     }
 
-    std::string const toString(void) const {
+    std::string const &toString(void) const {
+        static std::string outStr;
+        outStr.clear();
+
         std::string _typeStr;
-        {
-            size_t i = ~0ULL;
-            while (MaxOperandTypes > ++i) {
-                if (this->_type == i) {
-                    _typeStr = std::string(_validPushParamTypes[i]);
-                    break ;
-                }
+        size_t i = ~0ULL;
+        while (MaxOperandTypes > ++i) {
+            if (this->_type == i) {
+                _typeStr = std::string(_validPushParamTypes[i]);
+                break ;
             }
         }
-        return _typeStr + "(" + this->_valueStr + ")";
+
+        outStr = std::string(_typeStr + "(" + this->_valueStr + ")");
+        return outStr;
     }
 private:
     eOperandType _type;
