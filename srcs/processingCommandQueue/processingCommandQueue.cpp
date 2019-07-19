@@ -39,7 +39,7 @@ bool processingCommandQueue(std::vector<std::string> *commandQueue) {
     } else {
         std::cout << CYAN "AVM" WHITE " " MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
             << std::setw(6) << Reader::getGlobalErrorsCounter()
-            << WHITE "] errors was occured while AVM was executed,"
+            << WHITE "] error occured while AVM was executed,"
             " try to fix all error reports above for successful AVM work;" << std::endl;
     }
     return isValid;

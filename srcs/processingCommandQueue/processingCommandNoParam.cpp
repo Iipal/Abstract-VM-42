@@ -21,10 +21,10 @@ bool processAdd(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' \'add\' \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "add" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand + *rightOperand;
         if (result) {
-            std::cout << "\'" << (*result).toString() << "\';" << std::endl;
+            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -43,10 +43,10 @@ bool processSub(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' \'sub\' \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "sub" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand - *rightOperand;
         if (result) {
-            std::cout << "\'" << (*result).toString() << "\';" << std::endl;
+            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -65,10 +65,10 @@ bool processMul(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' \'mul\' \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "mul" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand * *rightOperand;
         if (result) {
-            std::cout << "\'" << (*result).toString() << "\';" << std::endl;
+            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -87,10 +87,10 @@ bool processDiv(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' \'div\' \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "div" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand / *rightOperand;
         if (result) {
-            std::cout << "\'" << (*result).toString() << "\';" << std::endl;
+            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -109,10 +109,10 @@ bool processMod(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' \'mod\' \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "mod" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand % *rightOperand;
         if (result) {
-            std::cout << "\'" << (*result).toString() << "\';" << std::endl;
+            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -129,7 +129,7 @@ bool processPop(std::list<IOperand const*> *const o) {
             "command queue is empty now, \'pop\' can't unstack value from top;" << std::endl;
         return false;
     } else {
-        std::cout << "pop " << (*(o->begin()))->toString() << " value from the top of the stack" << std::endl;
+        std::cout << "pop \'" RED << (*(o->begin()))->toString() << WHITE "\' value from the top of the stack" << std::endl;
         o->pop_front();
     }
     return true;
@@ -146,7 +146,7 @@ bool processDump(std::list<IOperand const*> *const o) {
         std::list<IOperand const*>::const_iterator it = o->begin();
         while (o->end() != it) {
             std::cout << std::setiosflags(std::ios::right) << "[" UNDERLINE << std::setw(6)
-                << ++elementNumber << WHITE "] - " << (*it)->toString() << ";" << std::endl;
+                << ++elementNumber << WHITE "] - precision \'" UNDERLINE << std::setw(3) << (*it)->getPrecision() << WHITE "\', " << (*it)->toString() << ';' << std::endl;
             ++it;
         }
     }

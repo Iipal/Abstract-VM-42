@@ -68,8 +68,8 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                 if ((isValidLastCommand = validatingReadedCommand(_tmp))) {
                     outCommandsQueue->push_back(_tmp);
                 } else {
-                    std::cout << WARN_PREFIX "invalid command was detected, "
-                        "it's was ignored to add to command queue, try another command ('h');" << std::endl;
+                    std::cout << WARN_PREFIX "invalid command detected, it was ignored."
+                        " try another command. see help for more details ('h');" << std::endl;
                 }
             }
         }
@@ -157,7 +157,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
                     if (validatingReadedCommand(_tmp)) {
                         outCommandsQueue->push_back(_tmp);
                     } else {
-                        std::cout << REPORT_PREFIX "problem was detected at line: [ " UNDERLINE
+                        std::cout << REPORT_PREFIX "error on line: [ " UNDERLINE
                             << std::setw(5) << readedLines << WHITE " ];" << std::endl;
                         isValid = false;
                     }
@@ -169,12 +169,14 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
             isValid = false;
         }
     } else {
-        std::cout << ERR_REPORT_PREFIX "\'" << fileName << "\' is an invalid file." << std::endl;
+        std::cout << ERR_REPORT_PREFIX "\'" << fileName << "\' file is invalid." << std::endl;
         isValid = false;
     }
     if (false == isValid) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "invalid command queue. " UNDERLINE RED "can't execute AVM" WHITE ";" << std::endl;
+        std::cout << CYAN "AVM" WHITE " " MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
+            << std::setw(6) << Reader::getGlobalErrorsCounter()
+            << WHITE "] error occured before AVM was executed,"
+            " try to fix all error reports above for successful AVM work;" << std::endl;
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
@@ -231,7 +233,7 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
         } else {
             std::cout << command;
         }
-        std::cout  << WHITE "\' is an invalid command ('" CYAN << command << WHITE "');" << std::endl;
+        std::cout  << WHITE "\' command is invalid ('" CYAN << command << WHITE "');" << std::endl;
         Reader::incrementGlobalErrorsCounter();
     }
     return isValidCurrentCommand;
@@ -273,7 +275,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     }
                 }
             } else {
-                std::cout << ERR_REPORT_PREFIX << "missed value starts bracket \'" INVERT "(" WHITE "\' for \'" INVERT
+                std::cout << ERR_REPORT_PREFIX << "missed starts bracket \'" INVERT "(" WHITE "\' for \'" INVERT
                     << _validPushParamTypes[i] << WHITE "\';" << std::endl;
                 isValid = false;
             }
@@ -320,7 +322,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                         << _param.substr(_paramValueTypeParamEndBracketPos + 1, _param.length() - _paramValueTypeParamEndBracketPos)
                         << WHITE "\';" << std::endl;
                 } else {
-                    std::cout << ERR_REPORT_PREFIX << "missed value ending bracket for \'" INVERT << _validPushParamTypes[i]
+                    std::cout << ERR_REPORT_PREFIX << "missed ending bracket for \'" INVERT << _validPushParamTypes[i]
                         << WHITE "\' \'" INVERT ")" WHITE "\';" << std::endl;
                 }
                 isValid = false;
@@ -335,6 +337,6 @@ bool Reader::validatingCommandParam(std::string const &param) const {
     } else {
         std::cout << _param;
     }
-    std::cout << WHITE "\' in command parameter;" << std::endl;
+    std::cout << WHITE "\';" << std::endl;
     return false;
 }
