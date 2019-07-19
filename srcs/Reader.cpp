@@ -36,7 +36,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         _fullExecutablePath.append("/avm");
     }
 
-    std::cout << "    AVM console input mode " MAGENTA "('h' for details)" WHITE ":" << std::endl;
+    std::cout << "    AVM " GREEN "standard" WHITE " input mode " MAGENTA "('h' for details)" WHITE ":" << std::endl;
 
     std::string _tmp;
     bool isValidLastCommand = true;
@@ -60,6 +60,23 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                 isValidInput = false;
             } else if ("h" == _tmp || "help" == _tmp) {
                 printHelpInfoForStandardInput();
+            } else if ("l" == _tmp || "list" == _tmp) {
+                if (!outCommandsQueue->size()) {
+                    std::cout << WARN_PREFIX "command queue currently is empty;" << std::endl;
+                }
+                size_t i = ~0ULL;
+                while (outCommandsQueue->size() > ++i) {
+                    std::cout << "    [" UNDERLINE << std::setw(6) << i + 1 << WHITE "]: " << (*outCommandsQueue)[i] << std::endl;
+                }
+            } else if ("c" == _tmp || "clear" == _tmp) {
+                if (!outCommandsQueue->size()) {
+                    std::cout << WARN_PREFIX "command queue currently is empty;" << std::endl;
+                }
+                size_t i = outCommandsQueue->size();
+                while (i--) {
+                    std::cout << RED "removed" WHITE ": " << (*outCommandsQueue)[i] << std::endl;
+                    outCommandsQueue->pop_back();
+                }
             } else {
                 const size_t isCommentaryExistAfterCommand = _tmp.find_first_of(';', 0);
                 if (isCommentaryExistAfterCommand < _tmp.length()) {
@@ -202,7 +219,9 @@ void Reader::printHelpInfoForStandardInput(void) const {
         << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl
         << "Specified, for standard input mode, commands:" << std::endl
         << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and execute AVM;" << '|' << std::endl
+        << "| " INVERT "clear/c" WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Remove all commands from queue;" << '|' << std::endl
         << "| " INVERT "quit/q " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and quit without execute AVM;" << '|' << std::endl
+        << "| " INVERT "list/l " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Show list of currently added commands to queue;" << '|' << std::endl
         << "| " INVERT "help/h " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
 }
 
