@@ -38,6 +38,9 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
     std::cout << "    AVM " GREEN "standard" WHITE " input mode " MAGENTA "('h' for details)" WHITE ":" << std::endl;
 
+    const std::string _specCommands[MAX_SPECIFIED_COMMANDS] = { "list", "clean", "delete" };
+    const std::string _shortSpecCommands[MAX_SPECIFIED_COMMANDS] = { "l", "c", "d" };
+
     std::string _tmp;
     bool isValidLastCommand = true;
     bool isValidInput = true;
@@ -52,41 +55,40 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
             std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "Error occured in standard input;" << std::endl;
             _exit = true;
             isValidInput = false;
-        } else if (_tmp.size()) {
-            if (";;" == _tmp) {
-                _exit = true;
-            } else if ("q" == _tmp || "quit" == _tmp) {
-                _exit = true;
-                isValidInput = false;
-            } else if ("h" == _tmp || "help" == _tmp) {
-                printHelpInfoForStandardInput();
-            } else if ("l" == _tmp || "list" == _tmp) {
-                if (!outCommandsQueue->size()) {
-                    std::cout << WARN_PREFIX "can't show list of commands, queue currently is empty;" << std::endl;
-                }
-                size_t i = ~0ULL;
-                while (outCommandsQueue->size() > ++i) {
-                    std::cout << "    [" UNDERLINE << std::setw(6) << i + 1 << WHITE "]: " << (*outCommandsQueue)[i] << std::endl;
-                }
-            } else if ("c" == _tmp || "clear" == _tmp) {
-                if (!outCommandsQueue->size()) {
-                    std::cout << WARN_PREFIX "can't clear queue, it's empty." << std::endl;
-                }
-                size_t i = outCommandsQueue->size();
-                while (i--) {
-                    std::cout << RED "removed" WHITE ": " << (*outCommandsQueue)[i] << std::endl;
-                    outCommandsQueue->pop_back();
-                }
-            } else {
-                const size_t isCommentaryExistAfterCommand = _tmp.find_first_of(';', 0);
-                if (isCommentaryExistAfterCommand < _tmp.length()) {
-                    _tmp = _tmp.substr(0, isCommentaryExistAfterCommand);
-                }
-                if ((isValidLastCommand = validatingReadedCommand(_tmp))) {
-                    outCommandsQueue->push_back(_tmp);
+        } else  {
+            const size_t isCommentaryExistAfterCommand = _tmp.find_first_of(';', 0);
+            if (isCommentaryExistAfterCommand < _tmp.length() && _tmp != ";;") {
+                _tmp = _tmp.substr(0, isCommentaryExistAfterCommand);
+            }
+            if (_tmp.size()) {
+                if (";;" == _tmp) {
+                    std::string _isExit;
+                    std::cout << "do you want to stop input ? (Y/n): ";
+                    std::getline(std::cin, _isExit);
+                    if (_isExit == "y" || _isExit == "Y")
+                        _exit = true;
+                } else if ("q" == _tmp || "quit" == _tmp) {
+                    _exit = true; isValidInput = false;
+                } else if ("h" == _tmp || "help" == _tmp) {
+                    printHelpInfoForStandardInput();
                 } else {
-                    std::cout << WARN_PREFIX "invalid command detected, it was ignored."
-                        " try another command. see help for more details ('h');" << std::endl;
+                    bool isSpec = false;
+
+                    size_t i = ~0ULL;
+                    while (MAX_SPECIFIED_COMMANDS > ++i && !isSpec) {
+                        if (_tmp == _shortSpecCommands[i] || _tmp == _specCommands[i]) {
+                            isSpec = (this->*fnptrSpecFuncs[i])(outCommandsQueue);
+                        }
+                    }
+
+                    if (!isSpec) {
+                        if ((isValidLastCommand = validatingReadedCommand(_tmp))) {
+                            outCommandsQueue->push_back(_tmp);
+                        } else {
+                            std::cout << WARN_PREFIX "invalid command detected, it was ignored."
+                                " try another command. see help for more details ('h');" << std::endl;
+                        }
+                    }
                 }
             }
         }
@@ -205,24 +207,63 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
 /* private methods */
 void Reader::printHelpInfoForStandardInput(void) const {
     std::cout << INVERT "    AVM help info:    " << WHITE << std::endl << std::setiosflags(std::ios::left)
-        << "| "        "command"       " | " << std::setw(14) << "parameter"     << std::setw(95) << ": description" << '|' << std::endl
-        << "| " INVERT "exit   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
-        << "| " INVERT "print  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
-        << "| " INVERT "assert " WHITE " | " << std::setw(14) << "@exception"    << std::setw(95) << ": check if @exception is true or not;" << '|' << std::endl
-        << "| " INVERT "push   " WHITE " | " << std::setw(14) << "@type(@value)" << std::setw(95) << ": valid @type is int8, int16, int32, float, double; Pushes the @value at the top of the stack;" << '|' << std::endl
-        << "| " INVERT "pop    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the value from the top of the stack;" << '|' << std::endl
-        << "| " INVERT "add    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, adds them, then stacks the result;" << '|' << std::endl
-        << "| " INVERT "sub    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, subtracts them, then stacks the result;" << '|' << std::endl
-        << "| " INVERT "mul    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
-        << "| " INVERT "div    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
-        << "| " INVERT "mod    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
-        << "| " INVERT "       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl
+        << "| "        " command "       " | " << std::setw(14) << "parameter"     << std::setw(95) << ": description" << '|' << std::endl
+        << "| " INVERT "exit     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
+        << "| " INVERT "print    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
+        << "| " INVERT "assert   " WHITE " | " << std::setw(14) << "@exception"    << std::setw(95) << ": check if @exception is true or not;" << '|' << std::endl
+        << "| " INVERT "push     " WHITE " | " << std::setw(14) << "@type(@value)" << std::setw(95) << ": valid @type is int8, int16, int32, float, double; Pushes the @value at the top of the stack;" << '|' << std::endl
+        << "| " INVERT "pop      " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the value from the top of the stack;" << '|' << std::endl
+        << "| " INVERT "add      " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, adds them, then stacks the result;" << '|' << std::endl
+        << "| " INVERT "sub      " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, subtracts them, then stacks the result;" << '|' << std::endl
+        << "| " INVERT "mul      " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
+        << "| " INVERT "div      " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
+        << "| " INVERT "mod      " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
+        << "| " INVERT "         " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl
         << "Specified, for standard input mode, commands:" << std::endl
-        << "| " INVERT ";;     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and execute AVM;" << '|' << std::endl
-        << "| " INVERT "clear/c" WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Remove all commands from queue;" << '|' << std::endl
-        << "| " INVERT "quit/q " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and quit without execute AVM;" << '|' << std::endl
-        << "| " INVERT "list/l " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Show list of currently added commands to queue;" << '|' << std::endl
-        << "| " INVERT "help/h " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
+        << "| " INVERT ";;       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and execute AVM;" << '|' << std::endl
+        << "| " INVERT "clean/c  " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Remove all commands from queue;" << '|' << std::endl
+        << "| " INVERT "delete/d " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Remove last added command from queue;" << '|' << std::endl
+        << "| " INVERT "quit/q   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and quit without execute AVM;" << '|' << std::endl
+        << "| " INVERT "list/l   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Show list of currently added commands to queue;" << '|' << std::endl
+        << "| " INVERT "help/h   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
+}
+
+bool Reader::specList(std::vector<std::string> *const commandQueue) const {
+    if (!commandQueue->size()) {
+        std::cout << WARN_PREFIX "can't show list of commands, queue currently is empty;" << std::endl;
+    }
+
+    size_t i = ~0ULL;
+    while (commandQueue->size() > ++i) {
+        std::cout << "    [" UNDERLINE << std::setw(6) << i + 1 << WHITE "]: " << (*commandQueue)[i] << std::endl;
+    }
+
+    return true;
+}
+
+bool Reader::specClean(std::vector<std::string> *const commandQueue) const {
+    if (!commandQueue->size()) {
+        std::cout << WARN_PREFIX "can't clean commands queue, it's empty;" << std::endl;
+    }
+
+    size_t i = commandQueue->size();
+    while (i--) {
+        std::cout << RED "deleted" WHITE ": " << (*commandQueue)[i] << std::endl;
+        commandQueue->pop_back();
+    }
+
+    return true;
+}
+
+bool Reader::specDelete(std::vector<std::string> *const commandQueue) const {
+    if (!commandQueue->size()) {
+        std::cout << WARN_PREFIX "can't delete last command from queue, it's empty;" << std::endl;
+    } else {
+        std::cout << RED "deleted" WHITE ": " << (*commandQueue)[commandQueue->size() - 1] << std::endl;
+        commandQueue->pop_back();
+    }
+
+    return true;
 }
 
 bool Reader::validatingReadedCommand(std::string &command) const {

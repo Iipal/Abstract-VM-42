@@ -25,6 +25,8 @@
 #define REPORT_PREFIX CYAN "AVM" WHITE " " CYAN "report" WHITE "      ⤴ : "
 #define WARN_PREFIX CYAN "AVM" WHITE " " MAGENTA "warning" WHITE "     → : "
 
+#define MAX_SPECIFIED_COMMANDS 3
+
 class Reader {
 public:
     Reader();
@@ -43,7 +45,16 @@ public:
 private:
     bool validatingReadedCommand(std::string &command) const;
     bool validatingCommandParam(std::string &commandParam) const;
+
     void printHelpInfoForStandardInput(void) const;
+
+    bool specList(std::vector<std::string> *const commandQueue) const;
+    bool specClean(std::vector<std::string> *const commandQueue) const;
+    bool specDelete(std::vector<std::string> *const commandQueue) const;
+
+    typedef bool (Reader::*fnptrInputSpecCommands)(std::vector<std::string> *const) const;
+    const fnptrInputSpecCommands fnptrSpecFuncs[MAX_SPECIFIED_COMMANDS] = {
+        &Reader::specList, &Reader::specClean, &Reader::specDelete };
 
     static size_t globalErrorsCounter;
 };
