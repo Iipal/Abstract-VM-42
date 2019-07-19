@@ -141,7 +141,6 @@ bool processDump(std::list<IOperand const*> *const o) {
             "command queue is empty now, \'dump\' can't print all stack values;" << std::endl;
         return false;
     } else {
-        std::cout << "stack dump:" << std::endl;
         size_t elementNumber = ~0ULL;
         std::list<IOperand const*>::const_iterator it = o->begin();
         while (o->end() != it) {

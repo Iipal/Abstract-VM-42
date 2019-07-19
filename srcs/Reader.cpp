@@ -206,7 +206,7 @@ void Reader::printHelpInfoForStandardInput(void) const {
         << "| " INVERT "help/h " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
 }
 
-bool Reader::validatingReadedCommand(std::string const &command) const {
+bool Reader::validatingReadedCommand(std::string &command) const {
     const size_t previousErrorsCounterState = Reader::globalErrorsCounter;
     bool isValidCurrentCommand = false;
 
@@ -218,9 +218,15 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
 
     for (size_t i = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++i;) {
         if (!command.compare(0, _validCommandsWithParams[i].length(), _validCommandsWithParams[i].c_str())) {
+            std::string commandParam = command.substr(_validCommandsWithParams[i].length(),
+                    _validCommandsWithParams[i].length() - command.length());
             isValidCurrentCommand
-                = this->validatingCommandParam(command.substr(_validCommandsWithParams[i].length(),
-                    _validCommandsWithParams[i].length() - command.length()));
+                = this->validatingCommandParam(commandParam);
+            if (isValidCurrentCommand) {
+                std::string _srcCopy = command.substr(0, _validCommandsWithParams[i].length() + 1);
+                _srcCopy.append(commandParam);
+                command = std::string(_srcCopy);
+            }
         }
     }
 
@@ -239,39 +245,40 @@ bool Reader::validatingReadedCommand(std::string const &command) const {
     return isValidCurrentCommand;
 }
 
-bool Reader::validatingCommandParam(std::string const &param) const {
-    std::string _param = std::string(param);
-    if (' ' != param[0]) {
+bool Reader::validatingCommandParam(std::string &commandParam) const {
+    if (' ' != commandParam[0]) {
         std::cout << ERR_REPORT_PREFIX "missed space \'" INVERT " " WHITE "\' after command with param;" << std::endl;
         return false;
     } else {
-        _param = param.substr(1, param.length() - 1);
+        commandParam = commandParam.substr(1, commandParam.length() - 1);
     }
     {
-        const size_t additionalErrorSpaceInParamter = _param.find_first_of(' ', 0);
-        if (additionalErrorSpaceInParamter < _param.length()) {
+        const size_t additionalErrorSpaceInParamter = commandParam.find_first_of(' ', 0);
+        if (additionalErrorSpaceInParamter < commandParam.length()) {
             std::cout << ERR_REPORT_PREFIX "detected invalid space in command parameter \'" INVERT
-                << _param.substr(additionalErrorSpaceInParamter - 1, _param.length() - additionalErrorSpaceInParamter) << WHITE "\';" << std::endl;
+                << commandParam.substr(additionalErrorSpaceInParamter - 1, commandParam.length() - additionalErrorSpaceInParamter) << WHITE "\';" << std::endl;
             return false;
         }
     }
 
     bool isValid = true;
+    bool isNegative = false;
     size_t i = ~0ULL;
     while (MaxOperandTypes > ++i) {
-        if (!_param.compare(0, _validPushParamTypes[i].length(), _validPushParamTypes[i].c_str())) {
-            const size_t _paramValueTypeParamStartBracketPos = _param.find_first_of('(', _validPushParamTypes[i].length());
-            const size_t _paramValueTypeParamEndBracketPos = _param.find_first_of(')', _validPushParamTypes[i].length());
+        if (!commandParam.compare(0, _validPushParamTypes[i].length(), _validPushParamTypes[i].c_str())) {
+            const size_t _paramValueTypeParamStartBracketPos = commandParam.find_first_of('(', _validPushParamTypes[i].length());
+            const size_t _paramValueTypeParamEndBracketPos = commandParam.find_first_of(')', _validPushParamTypes[i].length());
             std::string _paramValue;
 
-            if (_paramValueTypeParamStartBracketPos < _param.length()) {
-                _paramValue = _param.substr(_validPushParamTypes[i].length() + 1, _param.length() - _validPushParamTypes[i].length() - 2);
+            if (_paramValueTypeParamStartBracketPos < commandParam.length()) {
+                _paramValue = commandParam.substr(_validPushParamTypes[i].length() + 1, commandParam.length() - _validPushParamTypes[i].length() - 2);
                 if (_paramValue.empty()) {
                     std::cout << ERR_REPORT_PREFIX "missed value for \'" INVERT << _validPushParamTypes[i] << WHITE "\';" <<  std::endl;
                     isValid = false;
                 } else {
                     if ('-' == _paramValue[0]) {
                         _paramValue = _paramValue.substr(1, _paramValue.length() - 1);
+                        isNegative = true;
                     }
                 }
             } else {
@@ -279,7 +286,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     << _validPushParamTypes[i] << WHITE "\';" << std::endl;
                 isValid = false;
             }
-            if (_paramValueTypeParamEndBracketPos < _param.length() && _paramValueTypeParamEndBracketPos + 1 == _param.length()) {
+            if (_paramValueTypeParamEndBracketPos < commandParam.length() && _paramValueTypeParamEndBracketPos + 1 == commandParam.length()) {
                 if (3 > i) {
                     isValid = !_paramValue.empty()
                         && std::find_if(_paramValue.begin(), _paramValue.end(), [](char c) { return !std::isdigit(c); }) == _paramValue.end();
@@ -288,7 +295,7 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                             << WHITE "\' in parameter for decimal type must to be only digits and decimal number;" << std::endl;
                     }
                 } else {
-                    bool isValidExponent = true, isValidMantissa = false;
+                    bool isValidExponent = true, isValidMantissa = true;
 
                     const size_t floatDotInParam = _paramValue.find_first_of('.', 0);
                     const std::string exponent = (floatDotInParam < _paramValue.length())
@@ -317,9 +324,9 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                     return isValidExponent && isValidMantissa;
                 }
             } else {
-                if (_paramValueTypeParamEndBracketPos < _param.length() && _paramValueTypeParamEndBracketPos + 1 != _param.length()) {
+                if (_paramValueTypeParamEndBracketPos < commandParam.length() && _paramValueTypeParamEndBracketPos + 1 != commandParam.length()) {
                     std::cout << ERR_REPORT_PREFIX << "trash detected after ending bracket: \'" INVERT
-                        << _param.substr(_paramValueTypeParamEndBracketPos + 1, _param.length() - _paramValueTypeParamEndBracketPos)
+                        << commandParam.substr(_paramValueTypeParamEndBracketPos + 1, commandParam.length() - _paramValueTypeParamEndBracketPos)
                         << WHITE "\';" << std::endl;
                 } else {
                     std::cout << ERR_REPORT_PREFIX << "missed ending bracket for \'" INVERT << _validPushParamTypes[i]
@@ -327,15 +334,69 @@ bool Reader::validatingCommandParam(std::string const &param) const {
                 }
                 isValid = false;
             }
+            if (isValid) {
+                switch (i)
+                {
+                    case Int8: {
+                        int32_t const _trueValue = std::stoi(_paramValue);
+                        int8_t const _resValue = static_cast<int8_t>(_trueValue) * (isNegative ? -1 : 1);
+                        std::string _resStrValue = std::to_string(_resValue);
+                        _resStrValue.append(")");
+                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
+                        _srcCopy.append(_resStrValue);
+                        commandParam = std::string(_srcCopy);
+                        break;
+                    }
+                    case Int16: {
+                        int32_t const _trueValue = std::stoi(_paramValue);
+                        int16_t const _resValue = static_cast<int16_t>(_trueValue) * (isNegative ? -1 : 1);
+                        std::string _resStrValue = std::to_string(_resValue);
+                        _resStrValue.append(")");
+                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
+                        _srcCopy.append(_resStrValue);
+                        commandParam = std::string(_srcCopy);
+                        break;
+                    }
+                    case Int32: {
+                        int32_t const _trueValue = std::stoi(_paramValue);
+                        std::string _resStrValue = std::to_string(_trueValue);
+                        _resStrValue.append(")");
+                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
+                        _srcCopy.append(_resStrValue);
+                        commandParam = std::string(_srcCopy);
+                        break;
+                    }
+                    case Float: {
+                        double const _trueValue = std::stod(_paramValue);
+                        float const _resValue = static_cast<float>(_trueValue);
+                        std::string _resStrValue = std::to_string(_resValue);
+                        _resStrValue.append(")");
+                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
+                        _srcCopy.append(_resStrValue);
+                        commandParam = std::string(_srcCopy);
+                        break;
+                    }
+                    case Double: {
+                        double const _trueValue = std::stod(_paramValue);
+                        std::string _resStrValue = std::to_string(_trueValue);
+                        _resStrValue.append(")");
+                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
+                        _srcCopy.append(_resStrValue);
+                        commandParam = std::string(_srcCopy);
+                        break;
+                    }
+                    default: break;
+                }
+            }
             return isValid;
         }
     }
-    const size_t _paramStartBrakcet = _param.find_first_of('(', 0);
+    const size_t _paramStartBrakcet = commandParam.find_first_of('(', 0);
     std::cout << ERR_REPORT_PREFIX "invalid type \'" INVERT;
-    if (_paramStartBrakcet < _param.length()) {
-        std::cout << _param.substr(0, _paramStartBrakcet);
+    if (_paramStartBrakcet < commandParam.length()) {
+        std::cout << commandParam.substr(0, _paramStartBrakcet);
     } else {
-        std::cout << _param;
+        std::cout << commandParam;
     }
     std::cout << WHITE "\';" << std::endl;
     return false;

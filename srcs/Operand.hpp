@@ -27,7 +27,8 @@ public:
         if (Double == this->_type || Float == this->_type) {
             const size_t _valueFloatingPointDot = this->_valueStr.find_first_of('.', 0);
             if (_valueFloatingPointDot < this->_valueStr.length()) {
-                const std::string _valueAfterDot = this->_valueStr.substr(_valueFloatingPointDot, this->_valueStr.length() - _valueFloatingPointDot);
+                std::string _valueAfterDot = this->_valueStr.substr(_valueFloatingPointDot + 1, this->_valueStr.length() - _valueFloatingPointDot);
+                _valueAfterDot.erase(std::find_if(_valueAfterDot.rbegin(), _valueAfterDot.rend(), [](int ch){ return ch != '0'; }).base(), _valueAfterDot.end());
                 _precision = _valueAfterDot.length();
             }
         }

@@ -41,8 +41,8 @@ public:
     static size_t const &getGlobalErrorsCounter(void) { return Reader::globalErrorsCounter; }
 
 private:
-    bool validatingReadedCommand(std::string const &command) const;
-    bool validatingCommandParam(std::string const &_pushType) const;
+    bool validatingReadedCommand(std::string &command) const;
+    bool validatingCommandParam(std::string &commandParam) const;
     void printHelpInfoForStandardInput(void) const;
 
     static size_t globalErrorsCounter;
