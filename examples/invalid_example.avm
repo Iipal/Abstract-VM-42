@@ -2,10 +2,11 @@
 ; example.avm -
 ; -------------
 
-push int32(42
+push int32
 push int32()
 
 add
+top
 
 push float(.)
 
@@ -16,7 +17,7 @@ push int32(ag)
 
 dump
 
-pop
+popa
 
 assert double(42,42)
 
