@@ -62,7 +62,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                 printHelpInfoForStandardInput();
             } else if ("l" == _tmp || "list" == _tmp) {
                 if (!outCommandsQueue->size()) {
-                    std::cout << WARN_PREFIX "command queue currently is empty;" << std::endl;
+                    std::cout << WARN_PREFIX "can't show list of commands, queue currently is empty;" << std::endl;
                 }
                 size_t i = ~0ULL;
                 while (outCommandsQueue->size() > ++i) {
@@ -70,7 +70,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
                 }
             } else if ("c" == _tmp || "clear" == _tmp) {
                 if (!outCommandsQueue->size()) {
-                    std::cout << WARN_PREFIX "command queue currently is empty;" << std::endl;
+                    std::cout << WARN_PREFIX "can't clear queue, it's empty." << std::endl;
                 }
                 size_t i = outCommandsQueue->size();
                 while (i--) {
