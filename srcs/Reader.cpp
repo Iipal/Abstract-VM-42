@@ -427,7 +427,7 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
                     }
                     case Int32: {
                         int32_t const _trueValue = std::stoi(_paramValue);
-                        int32_t const _resValue = static_cast<int16_t>(_trueValue) * (isNegative ? -1 : 1);
+                        int32_t const _resValue = static_cast<int32_t>(_trueValue) * (isNegative ? -1 : 1);
                         std::string _resStrValue = std::to_string(_resValue);
                         _resStrValue.append(")");
                         std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
@@ -447,7 +447,7 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
                     }
                     case Double: {
                         double const _trueValue = std::stod(_paramValue);
-                        double const _resValue = static_cast<float>(_trueValue) * (isNegative ? -1.0 : 1.0);
+                        double const _resValue = static_cast<double>(_trueValue) * (isNegative ? -1.0 : 1.0);
                         std::string _resStrValue = std::to_string(_resValue);
                         _resStrValue.append(")");
                         std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
