@@ -148,6 +148,18 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
 }
 
 std::vector<std::string> *Reader::readFileInput(std::string const &fileName) const {
+    if (fileName.compare(fileName.length() - 4, 4, ".avm")) {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+            "file \'" CYAN << fileName << WHITE "\' extension must to be: \'.avm\', for example: \'";
+        size_t const fileNameLastDot = fileName.find_last_of('.', fileName.length());
+        if (fileNameLastDot < fileName.length()) {
+            std::cout << fileName.substr(0, fileNameLastDot);
+        } else {
+            std::cout << fileName;
+        }
+        std::cout << ".avm\';" << std::endl;
+        return NULL;
+    }
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
     if (!outCommandsQueue) {
         std::cout << ERR_REPORT_PREFIX "cannot allocate memory;" << std::endl;
