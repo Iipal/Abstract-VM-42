@@ -57,7 +57,7 @@ bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue
                 if ((*commandQueue)[i] == "exit") {
                     break ;
                 } else {
-                    std::cout << "    [" UNDERLINE << std::setw(6) << i + 1 << WHITE "] \'" MAGENTA << (*commandQueue)[i] << WHITE "\';" << std::endl;
+                    std::cout << "[" UNDERLINE << std::setw(6) << i + 1 << WHITE "] \'" MAGENTA << (*commandQueue)[i] << WHITE "\';" << std::endl;
                     ++i;
                 }
             }
