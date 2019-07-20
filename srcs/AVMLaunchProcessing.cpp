@@ -14,8 +14,10 @@ bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue
 
     bool isValid = true;
     bool _exit = false;
+    size_t commandsCounter = 0;
     std::vector<std::string>::const_iterator it = commandQueue->begin();
     while (!_exit && commandQueue->end() != it) {
+        ++commandsCounter;
         for (size_t i = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++i;) {
             if (!(*it).compare(0, _validCommandsWithParams[i].length(), _validCommandsWithParams[i])) {
                 if (!(this->*fnptrsCommandsWParam[i])((*it).substr(_validCommandsWithParams[i].length() + 1, (*it).length() - 2), &operands)) {
@@ -37,12 +39,29 @@ bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue
                 break ;
             }
         }
-
         ++it;
     }
 
     if (isValid && _exit) {
-        std::cout << "  " GREEN "SUCCESSFUL" WHITE " executed AVM;" << std::endl;
+        std::cout << " " UNDERLINE GREEN "successful" WHITE " executed AVM;" << std::endl;
+        if (commandsCounter != commandQueue->size()) {
+            size_t i = commandsCounter;
+            while (commandQueue->size() > i) {
+                if ((*commandQueue)[i] == "exit") { break ; } else { ++i; }
+            }
+            std::cout << i << " | " << commandQueue->size() << " | " << commandsCounter << " = " << (i - commandsCounter) << std::endl;
+            std::cout << WARN_PREFIX "at least [" UNDERLINE << std::setw(6) << (i - commandsCounter)
+                << WHITE "] commands was un-executed after \'exit\':" << std::endl;
+            i = commandsCounter;
+            while (commandQueue->size() > i) {
+                if ((*commandQueue)[i] == "exit") {
+                    break ;
+                } else {
+                    std::cout << "    [" UNDERLINE << std::setw(6) << i + 1 << WHITE "] \'" MAGENTA << (*commandQueue)[i] << WHITE "\';" << std::endl;
+                    ++i;
+                }
+            }
+        }
     } else if (isValid && !_exit) {
         std::cout << WARN_PREFIX "executing was stopped without \'" CYAN "exit" WHITE "\';" << std::endl;
     } else {

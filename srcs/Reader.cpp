@@ -62,11 +62,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
             }
             if (_tmp.size()) {
                 if (";;" == _tmp) {
-                    std::string _isExit;
-                    std::cout << "do you want to stop input ? (Y/n): ";
-                    std::getline(std::cin, _isExit);
-                    if (_isExit == "y" || _isExit == "Y")
-                        _exit = true;
+                    _exit = true;
                 } else if ("q" == _tmp || "quit" == _tmp) {
                     _exit = true; isValidInput = false;
                 } else if ("h" == _tmp || "help" == _tmp) {
@@ -146,7 +142,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
-        std::cout << "  " GREEN "SUCCESSFUL" WHITE " read command queue from a pipe;" << std::endl;
+        std::cout << " " UNDERLINE GREEN "successful" WHITE " read command queue from a pipe;" << std::endl;
     }
     return outCommandsQueue;
 }
@@ -199,7 +195,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
-        std::cout << "  " GREEN "SUCCESSFUL" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl;
+        std::cout << " " UNDERLINE GREEN "successful" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl;
     }
     return outCommandsQueue;
 }
