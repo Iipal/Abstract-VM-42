@@ -15,7 +15,7 @@ bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue
     bool isValid = true;
     bool _exit = false;
     size_t commandsCounter = 0;
-    std::vector<std::string>::const_iterator it = commandQueue->begin();
+    std::vector<std::string>::iterator it = commandQueue->begin();
     while (!_exit && commandQueue->end() != it) {
         ++commandsCounter;
         for (size_t i = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++i;) {
@@ -45,19 +45,16 @@ bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue
     if (isValid && _exit) {
         std::cout << " " UNDERLINE GREEN "successful" WHITE " executed AVM;" << std::endl;
         if (commandsCounter != commandQueue->size()) {
-            size_t i = commandsCounter;
-            while (commandQueue->size() > i) {
-                if ((*commandQueue)[i] == "exit") { break ; } else { ++i; }
-            }
-            std::cout << WARN_PREFIX "at least [" UNDERLINE << std::setw(6) << (i - commandsCounter)
+            std::cout << WARN_PREFIX "at least [" UNDERLINE << std::setw(6) << (std::distance(commandQueue->begin(),
+                std::find_if(it, commandQueue->end(), [](std::string const &str){ return str == "exit"; })) - commandsCounter)
                 << WHITE "] commands was un-executed after \'exit\':" << std::endl;
-            i = commandsCounter;
-            while (commandQueue->size() > i) {
-                if ((*commandQueue)[i] == "exit") {
+
+            while (commandQueue->end() != it) {
+                if ((*it) == "exit") {
                     break ;
                 } else {
-                    std::cout << "[" UNDERLINE << std::setw(6) << i + 1 << WHITE "] \'" MAGENTA << (*commandQueue)[i] << WHITE "\';" << std::endl;
-                    ++i;
+                    std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), it) + 1 << WHITE "] \'" MAGENTA << (*it) << WHITE "\';" << std::endl;
+                    ++it;
                 }
             }
         }
