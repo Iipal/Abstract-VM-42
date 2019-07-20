@@ -196,7 +196,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
             isValid = false;
         }
     } else {
-        std::cout << ERR_REPORT_PREFIX "\'" << fileName << "\' file is invalid." << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "\'" << fileName << "\' file is invalid." << std::endl;
         isValid = false;
     }
     if (false == isValid) {
@@ -427,7 +427,8 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
                     }
                     case Int32: {
                         int32_t const _trueValue = std::stoi(_paramValue);
-                        std::string _resStrValue = std::to_string(_trueValue);
+                        int32_t const _resValue = static_cast<int16_t>(_trueValue) * (isNegative ? -1 : 1);
+                        std::string _resStrValue = std::to_string(_resValue);
                         _resStrValue.append(")");
                         std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
                         _srcCopy.append(_resStrValue);
@@ -436,7 +437,7 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
                     }
                     case Float: {
                         double const _trueValue = std::stod(_paramValue);
-                        float const _resValue = static_cast<float>(_trueValue);
+                        float const _resValue = static_cast<float>(_trueValue) * (isNegative ? -1.0f : 1.0f);
                         std::string _resStrValue = std::to_string(_resValue);
                         _resStrValue.append(")");
                         std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
@@ -446,7 +447,8 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
                     }
                     case Double: {
                         double const _trueValue = std::stod(_paramValue);
-                        std::string _resStrValue = std::to_string(_trueValue);
+                        double const _resValue = static_cast<float>(_trueValue) * (isNegative ? -1.0 : 1.0);
+                        std::string _resStrValue = std::to_string(_resValue);
                         _resStrValue.append(")");
                         std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
                         _srcCopy.append(_resStrValue);

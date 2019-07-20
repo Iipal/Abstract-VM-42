@@ -5,5 +5,4 @@ assert int32(5)
 push double(4.2)
 add
 dump
-sub
 exit

@@ -20,13 +20,6 @@ IOperand const *OperandFactory::createOperand(eOperandType type, std::string con
             return (this->*fnptrCreateOperands[type])(value);
         }
     }
-
-    try {
-        throw UnknownOperandTypeOccuredException();
-    } catch (std::exception &e) {
-        std::cout << e.what() << std::endl;
-    }
-
     return NULL;
 }
 
@@ -41,8 +34,26 @@ IOperand const *OperandFactory::createInt32(std::string const &value) const {
     return new Operand<int32_t>(Int32, value, std::stoi(value));
 }
 IOperand const *OperandFactory::createFloat(std::string const &value) const {
-    return new Operand<float>(Float, value, std::stof(value));
+    std::string _value = value;
+    const size_t _valueFloatingPointDot = _value.find_first_of('.', 0);
+    if (_valueFloatingPointDot < _value.length()) {
+        std::string _valueAfterDot = _value.substr(_valueFloatingPointDot + 1, _value.length() - _valueFloatingPointDot);
+        _valueAfterDot.erase(std::find_if(_valueAfterDot.rbegin(), _valueAfterDot.rend(), [](int ch){ return ch != '0'; }).base(), _valueAfterDot.end());
+        std::string _newValue = std::string(_value);
+        _value.erase(_valueFloatingPointDot + 1);
+        _value.append(_valueAfterDot);
+    }
+    return new Operand<float>(Float, _value, std::stof(value));
 }
 IOperand const *OperandFactory::createDouble(std::string const &value) const {
-    return new Operand<double>(Double, value, std::stod(value));
+    std::string _value = value;
+    const size_t _valueFloatingPointDot = _value.find_first_of('.', 0);
+    if (_valueFloatingPointDot < _value.length()) {
+        std::string _valueAfterDot = _value.substr(_valueFloatingPointDot + 1, _value.length() - _valueFloatingPointDot);
+        _valueAfterDot.erase(std::find_if(_valueAfterDot.rbegin(), _valueAfterDot.rend(), [](int ch){ return ch != '0'; }).base(), _valueAfterDot.end());
+        std::string _newValue = std::string(_value);
+        _value.erase(_valueFloatingPointDot + 1);
+        _value.append(_valueAfterDot);
+    }
+    return new Operand<double>(Double, _value, std::stod(value));
 }

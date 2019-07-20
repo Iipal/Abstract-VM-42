@@ -10,6 +10,8 @@ AVMLaunchProcessing &AVMLaunchProcessing::operator=(const AVMLaunchProcessing &c
 }
 
 bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue) {
+    std::cout << "    AVM " GREEN "start" WHITE " executing:" << std::endl;
+
     std::list<IOperand const*> operands;
 
     bool isValid = true;
@@ -92,6 +94,11 @@ bool AVMLaunchProcessing::processPush(std::string const &param, std::list<IOpera
 }
 
 bool AVMLaunchProcessing::processAssert(std::string const &param, std::list<IOperand const*> *const o) {
+    if (!o->size()) {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "command queue is empty now, can't process \'assert\';" << std::endl;
+        return false;
+    }
+
     const size_t _startBracket = param.find_first_of('(', 0) + 1;
     const size_t _endBracket = param.find_first_of(')', 0);
     const std::string _paramValue = param.substr(_startBracket, _endBracket - _startBracket);
@@ -112,10 +119,10 @@ bool AVMLaunchProcessing::processAssert(std::string const &param, std::list<IOpe
         _itParamValue.find_first_of(')', 0) - (_itParamValue.find_first_of('(', 0) + 1));
     if ((*it)->getType() != _oType || _itParamValue != _paramValue) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) << UNDERLINE "assert "
-            << param << WHITE " is " RED "false" WHITE ";" << std::endl;
+            << param << WHITE " is " CHERRY "false" WHITE ";" << std::endl;
         return false;
     } else {
-        std::cout << "assert " << param << " is " GREEN "true" WHITE ";" << std::endl;
+        std::cout << UNDERLINE "assert " << param << WHITE " is " GREEN "true" WHITE ";" << std::endl;
     }
     return true;
 }
@@ -141,10 +148,10 @@ bool AVMLaunchProcessing::processAdd(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "add" WHITE " \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "+" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand + *rightOperand;
         if (result) {
-            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
+            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -163,10 +170,10 @@ bool AVMLaunchProcessing::processSub(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "sub" WHITE " \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "-" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand - *rightOperand;
         if (result) {
-            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
+            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -185,10 +192,10 @@ bool AVMLaunchProcessing::processMul(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "mul" WHITE " \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "*" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand * *rightOperand;
         if (result) {
-            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
+            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -207,10 +214,10 @@ bool AVMLaunchProcessing::processDiv(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "div" WHITE " \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "/" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand / *rightOperand;
         if (result) {
-            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
+            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -229,10 +236,10 @@ bool AVMLaunchProcessing::processMod(std::list<IOperand const*> *const o) {
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " MAGENTA "mod" WHITE " \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "%" WHITE " \'" << (*rightOperand).toString() << "\' = ";
         IOperand const *result = *leftOperand % *rightOperand;
         if (result) {
-            std::cout << "\'" GREEN << (*result).toString() << WHITE "\';" << std::endl;
+            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -249,7 +256,7 @@ bool AVMLaunchProcessing::processPop(std::list<IOperand const*> *const o) {
             "command queue is empty now, \'pop\' can't unstack value from top;" << std::endl;
         return false;
     } else {
-        std::cout << "pop \'" MAGENTA << (*(o->begin()))->toString() << WHITE "\' value from the top of the stack;" << std::endl;
+        std::cout << "pop \'" CHERRY << (*(o->begin()))->toString() << WHITE "\' value from the top of the stack;" << std::endl;
         o->pop_front();
     }
     return true;

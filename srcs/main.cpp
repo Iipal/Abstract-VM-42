@@ -22,7 +22,6 @@ int main(int argc, char *argv[]) {
 
     if (commandQueue) {
         AVMLaunchProcessing avmLP;
-        std::cout << "    AVM " INVERT GREEN "start" WHITE " executing:" << std::endl;
         avmLP.startProcessing(commandQueue);
         delete commandQueue;
     }
