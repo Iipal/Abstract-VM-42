@@ -49,7 +49,6 @@ bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue
             while (commandQueue->size() > i) {
                 if ((*commandQueue)[i] == "exit") { break ; } else { ++i; }
             }
-            std::cout << i << " | " << commandQueue->size() << " | " << commandsCounter << " = " << (i - commandsCounter) << std::endl;
             std::cout << WARN_PREFIX "at least [" UNDERLINE << std::setw(6) << (i - commandsCounter)
                 << WHITE "] commands was un-executed after \'exit\':" << std::endl;
             i = commandsCounter;
