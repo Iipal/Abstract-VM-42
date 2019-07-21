@@ -17,7 +17,10 @@ int main(int argc, char *argv[]) {
     } else if (1 == argc) {
         commandQueue = r.readFileInput(*argv);
     } else {
-        std::cout << "Usage: ./avm <file-name>.avm" << std::endl;
+        std::cout << "Usage:" << std::endl
+            << " " CYAN "file" WHITE " input:     $> ./avm <file-name>.avm" << std::endl
+            << " " BLUE "pipe" WHITE " input:     $> cat <file-name>.avm | ./avm" << std::endl
+            << " " ORANGE "standard" WHITE " input: $> ./avm" << std::endl;
     }
 
     if (commandQueue) {
