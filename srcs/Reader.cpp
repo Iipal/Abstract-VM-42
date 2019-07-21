@@ -302,6 +302,16 @@ bool Reader::validatingReadedCommand(std::string &command) const {
     return isValidCurrentCommand;
 }
 
+bool validatingCommandParamValueIsDigits(std::string const &paramValue) {
+    bool out = !paramValue.empty()
+        && std::find_if(paramValue.begin(), paramValue.end(), [](char c) { return !std::isdigit(c); }) == paramValue.end();
+    if (!out) {
+        std::cout << ERR_REPORT_PREFIX "value \'" INVERT << paramValue
+            << WHITE "\' must to contain only digits and decimal number;" << std::endl;
+    }
+    return out;
+}
+
 bool Reader::validatingCommandParam(std::string &commandParam) const {
     if (' ' != commandParam[0]) {
         std::cout << ERR_REPORT_PREFIX "missed space \'" INVERT " " WHITE "\' after command which must to contain parameter;" << std::endl;
@@ -332,11 +342,9 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
                 if (_paramValue.empty()) {
                     std::cout << ERR_REPORT_PREFIX "missed value for \'" INVERT << _validPushParamTypes[i] << WHITE "\';" <<  std::endl;
                     isValid = false;
-                } else {
-                    if ('-' == _paramValue[0]) {
-                        _paramValue = _paramValue.substr(1, _paramValue.length() - 1);
-                        isNegative = true;
-                    }
+                } else if ('-' == _paramValue[0]) {
+                    _paramValue = _paramValue.substr(1, _paramValue.length() - 1);
+                    isNegative = true;
                 }
             } else {
                 std::cout << ERR_REPORT_PREFIX << "missed starts bracket \'" INVERT "(" WHITE "\' for \'" INVERT
@@ -345,25 +353,17 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
             }
             if (_paramValueTypeParamEndBracketPos < commandParam.length() && _paramValueTypeParamEndBracketPos + 1 == commandParam.length()) {
                 if (3 > i) {
-                    isValid = !_paramValue.empty()
-                        && std::find_if(_paramValue.begin(), _paramValue.end(), [](char c) { return !std::isdigit(c); }) == _paramValue.end();
-                    if (!isValid) {
-                        std::cout << ERR_REPORT_PREFIX << "value \'" INVERT << _paramValue
-                            << WHITE "\' in parameter for decimal type must to be only digits and decimal number;" << std::endl;
-                    }
+                    isValid = validatingCommandParamValueIsDigits(_paramValue);
                 } else {
                     bool isValidExponent = true, isValidMantissa = true;
 
                     const size_t floatDotInParam = _paramValue.find_first_of('.', 0);
-                    const std::string exponent = (floatDotInParam < _paramValue.length())
-                        ? _paramValue.substr(0, floatDotInParam) : std::string(_paramValue);
-                    if (!exponent.empty()) {
-                        isValidExponent = std::find_if(exponent.begin(), exponent.end(), [](char c) { return !std::isdigit(c); }) == exponent.end();
-                        if (!isValidExponent) {
-                            std::cout << ERR_REPORT_PREFIX "exponent value \'" INVERT << exponent
-                                << WHITE "\' must to contain only digits and decimal number;" << std::endl;
-                        }
+                    std::string exponent = _paramValue;
+                    if (floatDotInParam < _paramValue.length()) {
+                        exponent = _paramValue.substr(0, floatDotInParam);
                     }
+                    isValidExponent = validatingCommandParamValueIsDigits(exponent);
+
                     if (floatDotInParam < _paramValue.length()) {
                         const std::string mantissa = _paramValue.substr(floatDotInParam + 1, _paramValue.length() - floatDotInParam - 1);
                         isValidMantissa = true;
@@ -371,11 +371,7 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
                             isValidMantissa = false;
                             std::cout << ERR_REPORT_PREFIX << "invalid value, at least mantissa OR exponent must exist;" << std::endl;
                         } else {
-                            isValidMantissa = std::find_if(mantissa.begin(), mantissa.end(), [](char c) { return !std::isdigit(c); }) == mantissa.end();
-                            if (!isValidMantissa) {
-                                std::cout << ERR_REPORT_PREFIX "mantissa value \'" INVERT << mantissa
-                                    << WHITE "\' must to contain only digits and decimal number;" << std::endl;
-                            }
+                            isValidMantissa = validatingCommandParamValueIsDigits(mantissa);
                         }
                     }
                     return isValidExponent && isValidMantissa;
@@ -392,60 +388,7 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
                 isValid = false;
             }
             if (isValid) {
-                switch (i)
-                {
-                    case Int8: {
-                        int32_t const _trueValue = std::stoi(_paramValue);
-                        int8_t const _resValue = static_cast<int8_t>(_trueValue) * (isNegative ? -1 : 1);
-                        std::string _resStrValue = std::to_string(_resValue);
-                        _resStrValue.append(")");
-                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
-                        _srcCopy.append(_resStrValue);
-                        commandParam = std::string(_srcCopy);
-                        break;
-                    }
-                    case Int16: {
-                        int32_t const _trueValue = std::stoi(_paramValue);
-                        int16_t const _resValue = static_cast<int16_t>(_trueValue) * (isNegative ? -1 : 1);
-                        std::string _resStrValue = std::to_string(_resValue);
-                        _resStrValue.append(")");
-                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
-                        _srcCopy.append(_resStrValue);
-                        commandParam = std::string(_srcCopy);
-                        break;
-                    }
-                    case Int32: {
-                        int32_t const _trueValue = std::stoi(_paramValue);
-                        int16_t const _resValue = static_cast<int32_t>(_trueValue) * (isNegative ? -1 : 1);
-                        std::string _resStrValue = std::to_string(_resValue);
-                        _resStrValue.append(")");
-                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
-                        _srcCopy.append(_resStrValue);
-                        commandParam = std::string(_srcCopy);
-                        break;
-                    }
-                    case Float: {
-                        double const _trueValue = std::stod(_paramValue);
-                        float const _resValue = static_cast<float>(_trueValue) * (isNegative ? -1.0f : 1.0f);
-                        std::string _resStrValue = std::to_string(_resValue);
-                        _resStrValue.append(")");
-                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
-                        _srcCopy.append(_resStrValue);
-                        commandParam = std::string(_srcCopy);
-                        break;
-                    }
-                    case Double: {
-                        double const _trueValue = std::stod(_paramValue);
-                        double const _resValue = static_cast<double>(_trueValue) * (isNegative ? -1.0 : 1.0);
-                        std::string _resStrValue = std::to_string(_resValue);
-                        _resStrValue.append(")");
-                        std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);
-                        _srcCopy.append(_resStrValue);
-                        commandParam = std::string(_srcCopy);
-                        break;
-                    }
-                    default: break;
-                }
+                isValid = validatingCommandParamValueInRange(_paramValue, static_cast<eOperandType>(i), commandParam, isNegative, _paramValueTypeParamStartBracketPos);
             }
             return isValid;
         }
@@ -459,4 +402,51 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
     }
     std::cout << WHITE "\';" << std::endl;
     return false;
+}
+
+bool baseIntValidatingCommandParamValueInRange(std::string const &paramValue, int32_t &_trueValue, eOperandType const &type) {
+    bool out = true;
+    try {
+        _trueValue = std::stoi(paramValue);
+    } catch (std::exception &e) {
+        std::cout << ERR_REPORT_PREFIX << "invalid value for reading with \'std::" << e.what()
+            << "\', max: " UNDERLINE << INT32_MAX << WHITE ", min: " UNDERLINE << INT32_MIN
+            << WHITE;
+            switch (type) {
+                case Int8: std::cout << ", but with overflow to current type int8_t(" UNDERLINE
+                    << INT8_MAX << WHITE " - " UNDERLINE << INT8_MIN << WHITE ");" << std::endl; break;
+                case Int16: std::cout << ", but with overflow to current type int16_t(" UNDERLINE
+                    << INT16_MAX << WHITE " - " UNDERLINE << INT16_MIN << WHITE ");" << std::endl; break;
+                default: std::cout << ';' << std::endl; break;
+            }
+        out = false;
+    }
+    return out;
+}
+
+template <typename T>
+void baseConvertCommandParamInRangeValue(T const resValue, std::string &commandParam, size_t const &bracket) {
+    commandParam.erase(bracket + 1);
+    commandParam.append(std::to_string(resValue) + ")");
+}
+
+bool Reader::validatingCommandParamValueInRange(std::string const &paramValue, eOperandType type,
+    std::string &commandParam, bool const &isNegative, size_t const &bracket) const {
+    bool isValid = true;
+    int32_t _trueIntValue;
+    double _trueFloatValue = std::stod(paramValue);
+    if (Float > type) {
+        isValid = baseIntValidatingCommandParamValueInRange(paramValue, _trueIntValue, type);
+    }
+    if (isValid) {
+        switch (type) {
+            case Int8: baseConvertCommandParamInRangeValue(static_cast<int8_t>(_trueIntValue) * (isNegative ? -1 : 1), commandParam, bracket); break;
+            case Int16: baseConvertCommandParamInRangeValue(static_cast<int16_t>(_trueIntValue) * (isNegative ? -1 : 1), commandParam, bracket); break;
+            case Int32: baseConvertCommandParamInRangeValue(_trueIntValue * (isNegative ? -1 : 1), commandParam, bracket); break;
+            case Float: baseConvertCommandParamInRangeValue(static_cast<float>(_trueFloatValue) * (isNegative ? -1.0f : 1.0f), commandParam, bracket); break;
+            case Double: baseConvertCommandParamInRangeValue(_trueFloatValue * (isNegative ? -1.0 : 1.0), commandParam, bracket); break;
+            default: break;
+        }
+    }
+    return isValid;
 }

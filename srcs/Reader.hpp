@@ -58,7 +58,11 @@ private:
         &Reader::specList, &Reader::specClean, &Reader::specDelete };
 
     bool validatingReadedCommand(std::string &command) const;
+
     bool validatingCommandParam(std::string &commandParam) const;
+    bool validatingCommandParamValueInRange(std::string const &paramValue, eOperandType type,
+        std::string &commandParam, bool const &isNegative,
+        size_t const &paramValueTypeParamStartBracketPos) const;
 
     static size_t globalErrorsCounter;
 };
