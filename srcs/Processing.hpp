@@ -13,30 +13,35 @@ public:
 
     bool startProcessing(std::vector<std::string> *commandQueue);
 private:
-    bool processPush(std::string const &param, std::list<IOperand const*> *const o);
-    bool processAssert(std::string const &param, std::list<IOperand const*> *const o);
+    std::list<IOperand const *> _operands;
 
-    typedef bool (Processing::*fnptrProcessCommandWParam)(std::string const&, std::list<IOperand const*> *const);
+    bool isEmptyOperandsList(std::string const command) const;
+
+    bool processPush(std::string const &param);
+    bool processAssert(std::string const &param);
+
+    typedef bool (Processing::*fnptrProcessCommandWParam)(std::string const&);
     const fnptrProcessCommandWParam fnptrsCommandsWParam[MAX_VALID_W_PARAM_COMMANDS] = {
         &Processing::processPush, &Processing::processAssert };
 
-    bool processPrint(std::list<IOperand const*> *const o);
-    bool processExit(std::list<IOperand const*> *const o);
+    bool processExit();
+    bool processPop();
 
-    bool baseProcessAriphmetic(std::list<IOperand const *> *const o, std::string const command, char const op);
-    bool processAdd(std::list<IOperand const*> *const o);
-    bool processSub(std::list<IOperand const*> *const o);
-    bool processMul(std::list<IOperand const*> *const o);
-    bool processDiv(std::list<IOperand const*> *const o);
-    bool processMod(std::list<IOperand const*> *const o);
+    void baseDisplayOperand(IOperand const *it, size_t i);
+    bool processPrint();
+    bool processDump();
 
-    bool processPop(std::list<IOperand const*> *const o);
-    bool processDump(std::list<IOperand const*> *const o);
+    bool baseProcessAriphmetic(std::string const command, char const op);
+    bool processAdd();
+    bool processSub();
+    bool processMul();
+    bool processDiv();
+    bool processMod();
 
-    typedef bool (Processing::*fnptrProcessCommandNoParam)(std::list<IOperand const*> *const);
+    typedef bool (Processing::*fnptrProcessCommandNoParam)(void);
     const fnptrProcessCommandNoParam fnptrsCommandsNoParam[MAX_VALID_NO_PARAM_COMMANDS] = {
-        &Processing::processPrint, &Processing::processExit, &Processing::processAdd,
-        &Processing::processSub, &Processing::processMul, &Processing::processDiv,
-        &Processing::processMod, &Processing::processPop, &Processing::processDump };
-
+        &Processing::processExit, &Processing::processPop, &Processing::processPrint, &Processing::processDump,
+        &Processing::processAdd, &Processing::processSub, &Processing::processMul, &Processing::processDiv,
+        &Processing::processMod, };
+    void displayUnexecutedCommands(std::vector<std::string> *commandQueue, std::vector<std::string>::iterator &it, size_t const &commandsCounter);
 };

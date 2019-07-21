@@ -10,22 +10,22 @@
 #include <stdio.h>
 #include "IOperand.hpp"
 
-#define RED "\033[38;5;161m"
-#define BLUE "\033[38;5;45m"
-#define CYAN "\033[38;5;14m"
+#define RED "\033[38;5;1m"
+#define BLUE "\033[38;5;75m"
+#define CYAN "\033[38;5;87m"
 #define WHITE "\033[0m"
-#define GREEN "\033[38;5;46m"
-#define CHERRY "\033[38;5;197m"
-#define MAGENTA "\033[38;5;206m"
+#define GREEN "\033[38;5;112m"
+#define ORANGE "\033[38;5;208m"
+#define MAGENTA "\033[38;5;169m"
 
 #define DIM "\033[2m"
 #define INVERT "\033[7m"
 #define UNDERLINE "\033[4m"
 
-#define ERR_N_PREFIX(errNum) CYAN "AVM" WHITE " " CHERRY "error" WHITE << " [" UNDERLINE << std::setw(6) << errNum << WHITE "]: "
-#define ERR_REPORT_PREFIX CYAN "AVM" WHITE " " RED "error-report" WHITE "⤵ : "
-#define REPORT_PREFIX CYAN "AVM" WHITE " " BLUE "report" WHITE "      ⤴ : "
-#define WARN_PREFIX CYAN "AVM" WHITE " " MAGENTA "warning" WHITE "     → : "
+#define ERR_N_PREFIX(errNum) "AVM " RED "error" WHITE << " [" UNDERLINE << std::setw(6) << errNum << WHITE "]: "
+#define ERR_REPORT_PREFIX "AVM " ORANGE "error-report" WHITE "⤵ : "
+#define REPORT_PREFIX "AVM " BLUE "report" WHITE "      ⤴ : "
+#define WARN_PREFIX "AVM " MAGENTA "warning" WHITE "     → : "
 
 #define MAX_SPECIFIED_COMMANDS 3
 

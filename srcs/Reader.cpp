@@ -27,16 +27,17 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         gethostname(_hnBuff, 32);
         _hostName = std::string(_hnBuff);
         if (_hostName.empty()) {
-            _hostName = std::string("AVM host");
+            _hostName = std::string("*AVM host-name*");
         }
 
         char *_fepBuff = NULL;
         _fepBuff = getcwd(_fepBuff, 64);
         _fullExecutablePath = std::string(_fepBuff);
         _fullExecutablePath.append("/avm");
+        free(_fepBuff);
     }
 
-    std::cout << "    AVM " GREEN "standard" WHITE " input mode " MAGENTA "('h' for details)" WHITE ":" << std::endl;
+    std::cout << "    AVM " ORANGE "standard" WHITE " input mode (" UNDERLINE "'h' for details" WHITE "):" << std::endl << std::endl;
 
     const std::string _specCommands[MAX_SPECIFIED_COMMANDS] = { "list", "clean", "delete" };
     const std::string _shortSpecCommands[MAX_SPECIFIED_COMMANDS] = { "l", "c", "d" };
@@ -107,7 +108,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
         return outCommandsQueue;
     }
 
-    std::cout << "    AVM " BLUE "pipe" WHITE " input mode:" << std::endl;
+    std::cout << "    AVM " BLUE "pipe" WHITE " input mode:" << std::endl << std::endl;
 
     std::string _tmp;
     bool isValid = true;
@@ -137,69 +138,47 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
-        std::cout << " " UNDERLINE GREEN "successful" WHITE " read command queue from a pipe;" << std::endl;
+        std::cout << " " UNDERLINE "successful" WHITE " read command queue from a pipe;" << std::endl << std::endl;
     }
     return outCommandsQueue;
 }
 
 std::vector<std::string> *Reader::readFileInput(std::string const &fileName) const {
-    bool isValid = true;
-
-    if (fileName.length() >= 4) {
-        if (fileName.compare(fileName.length() - 4, 4, ".avm")) {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-                "file \'" CYAN << fileName << WHITE "\' extension must to be: \'.avm\', for example: \'";
-            size_t const fileNameLastDot = fileName.find_last_of('.', fileName.length());
-            if (fileNameLastDot < fileName.length()) {
-                std::cout << fileName.substr(0, fileNameLastDot);
-            } else {
-                std::cout << fileName;
-            }
-            std::cout << ".avm\';" << std::endl;
-            isValid = false;
-        }
-    } else {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "file \'" CYAN << fileName << WHITE "\' hasn't extension \'.avm\';" << std::endl;
-        isValid = false;
+    std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
+    if (!outCommandsQueue) {
+        std::cout << ERR_REPORT_PREFIX "cannot allocate memory;" << std::endl;
+        return outCommandsQueue;
     }
 
-    std::vector<std::string> *outCommandsQueue = NULL;
-    if (isValid) {
-        outCommandsQueue = new std::vector<std::string>();
-        if (!outCommandsQueue) {
-            std::cout << ERR_REPORT_PREFIX "cannot allocate memory;" << std::endl;
-            return outCommandsQueue;
-        }
+    std::cout << "    AVM " CYAN "file" WHITE " input mode:" << std::endl << std::endl;
 
-        std::cout << "    AVM " CYAN "file" WHITE " input mode:" << std::endl;
-
-        std::fstream _file(fileName);
-        if (_file.is_open()) {
-            size_t readedLines = 0;
-            std::string _tmp;
-            while (std::getline(_file, _tmp)) {
-                ++readedLines;
+    bool isValid = true;
+    std::fstream _file(fileName);
+    if (_file.is_open()) {
+        size_t readedLines = 0;
+        std::string _tmp;
+        while (std::getline(_file, _tmp)) {
+            ++readedLines;
+            if (_tmp.length()) {
+                baseStringPrepareAfterReading(_tmp);
                 if (_tmp.length()) {
-                    baseStringPrepareAfterReading(_tmp);
-                    if (_tmp.length()) {
-                        if (validatingReadedCommand(_tmp)) {
-                            outCommandsQueue->push_back(_tmp);
-                        } else {
-                            std::cout << REPORT_PREFIX "error on line: [ " UNDERLINE
-                                << std::setw(5) << readedLines << WHITE " ];" << std::endl;
-                            isValid = false;
-                        }
+                    if (validatingReadedCommand(_tmp)) {
+                        outCommandsQueue->push_back(_tmp);
+                    } else {
+                        std::cout << REPORT_PREFIX "error on line: [ " UNDERLINE
+                            << std::setw(5) << readedLines << WHITE " ];" << std::endl;
+                        isValid = false;
                     }
                 }
             }
-            if (isValid && !outCommandsQueue->size()) {
-                std::cout << ERR_REPORT_PREFIX "command queue is empty, can't execute AVM." << std::endl;
-                isValid = false;
-            }
-        } else {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "\'" << fileName << "\' file is invalid." << std::endl;
+        }
+        if (isValid && !outCommandsQueue->size()) {
+            std::cout << ERR_REPORT_PREFIX "command queue is empty, can't execute AVM." << std::endl;
             isValid = false;
         }
+    } else {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "\'" << fileName << "\' file is invalid." << std::endl;
+        isValid = false;
     }
 
     if (false == isValid) {
@@ -210,7 +189,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
-        std::cout << " " UNDERLINE GREEN "successful" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl;
+        std::cout << UNDERLINE "successful" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl << std::endl;
     }
     return outCommandsQueue;
 }

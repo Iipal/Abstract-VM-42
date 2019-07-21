@@ -2,7 +2,12 @@
 
 Processing::Processing() { }
 Processing::Processing(const Processing &copy) { *this = copy; }
-Processing::~Processing() { }
+Processing::~Processing() {
+    std::list<IOperand const*>::iterator it = this->_operands.begin();
+    while (this->_operands.end() != it) {
+        delete *it++;
+    }
+}
 
 Processing &Processing::operator=(const Processing &copy) {
     if (this != &copy) { *this = copy; }
@@ -10,8 +15,7 @@ Processing &Processing::operator=(const Processing &copy) {
 }
 
 bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
-    std::cout << "    AVM " GREEN "start" WHITE " executing:" << std::endl;
-    std::list<IOperand const *> operands;
+    std::cout << "    AVM " UNDERLINE "start" WHITE " executing:" << std::endl << std::endl;
 
     bool isValid = true;
     bool _exit = false;
@@ -21,7 +25,7 @@ bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
         ++commandsCounter;
         for (size_t i = ~0ULL; MAX_VALID_W_PARAM_COMMANDS > ++i;) {
             if (!(*it).compare(0, _validCommandsWithParams[i].length(), _validCommandsWithParams[i])) {
-                if (!(this->*fnptrsCommandsWParam[i])((*it).substr(_validCommandsWithParams[i].length() + 1, (*it).length() - 2), &operands)) {
+                if (!(this->*fnptrsCommandsWParam[i])((*it).substr(_validCommandsWithParams[i].length() + 1, (*it).length() - 2))) {
                     isValid = false;
                 }
                 break ;
@@ -30,10 +34,10 @@ bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
 
         for (size_t i = ~0ULL; MAX_VALID_NO_PARAM_COMMANDS > ++i;) {
             if (*it == _validCommandsNoParams[i]) {
-                if (i == 1) {
+                if (!i) {
                     _exit = true;
                 } else {
-                    if (!(this->*fnptrsCommandsNoParam[i])(&operands)) {
+                    if (!(this->*fnptrsCommandsNoParam[i])()) {
                         isValid = false;
                     }
                 }
@@ -45,47 +49,23 @@ bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
 
     if (isValid && _exit) {
         if (commandsCounter != commandQueue->size()) {
-            std::cout << WARN_PREFIX "at least [" UNDERLINE << std::setw(6) << (std::distance(commandQueue->begin(),
-                std::find_if(it, commandQueue->end(), [](std::string const &str){ return str == "exit"; })) - commandsCounter)
-                << WHITE "] commands was un-executed after \'exit\':" << std::endl;
-            std::vector<std::string>::iterator i = commandQueue->begin();
-            while (commandQueue->end() != i) {
-                if (i < it) {
-                    std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), i) + 1 << WHITE "] \'" DIM << (*i) << WHITE "\';" << std::endl;
-                } else {
-                    if ((*i) == "exit") {
-                        std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), i) + 1 << WHITE "] \'" DIM RED << (*i) << WHITE "\';" << std::endl;
-                        break ;
-                    } else {
-                        std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), i) + 1 << WHITE "] \'" CHERRY << (*i) << WHITE "\';" << std::endl;
-                    }
-                }
-                ++i;
-            }
+            displayUnexecutedCommands(commandQueue, it, commandsCounter);
         } else {
-            std::cout << " " UNDERLINE GREEN "successful" WHITE " executed AVM;" << std::endl;
+            std::cout << std::endl << UNDERLINE "successful" WHITE " executed AVM;" << std::endl;
         }
     } else if (isValid && !_exit) {
         std::cout << WARN_PREFIX "executing was stopped without \'" CYAN "exit" WHITE "\';" << std::endl;
     } else {
         std::cout << CYAN "AVM" WHITE " " MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
             << std::setw(6) << Reader::getGlobalErrorsCounter()
-            << WHITE "] error occured while AVM was executed,"
-            " try to fix all error reports above for successful AVM work;" << std::endl;
-    }
-    if (operands.size()) {
-        std::list<IOperand const *>::iterator it = operands.begin();
-        while (operands.end() != it) {
-            delete *it;
-            ++it;
-        }
+            << WHITE "] error occured while AVM was executed, try to fix all error reports above for successful AVM work;" << std::endl;
     }
     return isValid;
 }
 
 /* private methods */
 
-bool Processing::processPush(std::string const &param, std::list<IOperand const*> *const o) {
+bool Processing::processPush(std::string const &param) {
     const size_t _startBracket = param.find_first_of('(', 0) + 1;
     const size_t _endBracket = param.find_first_of(')', 0);
     const std::string _paramValue = param.substr(_startBracket, _endBracket - _startBracket);
@@ -100,13 +80,13 @@ bool Processing::processPush(std::string const &param, std::list<IOperand const*
         }
     }
 
-    o->push_front(gOFactory.createOperand(_oType, _paramValue));
-    std::cout << "pushed " << _paramType << "(" << _paramValue << ") to top of the stack;" << std::endl;
+    this->_operands.push_front(gOFactory.createOperand(_oType, _paramValue));
+    std::cout << "added \'" BLUE << _paramType << "(" << _paramValue << WHITE ")\';" << std::endl;
     return true;
 }
 
-bool Processing::processAssert(std::string const &param, std::list<IOperand const*> *const o) {
-    if (!o->size()) {
+bool Processing::processAssert(std::string const &param) {
+    if (!this->_operands.size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "command queue is empty now, can't process \'assert\';" << std::endl;
         return false;
     }
@@ -125,44 +105,80 @@ bool Processing::processAssert(std::string const &param, std::list<IOperand cons
         }
     }
 
-    std::list<IOperand const*>::const_iterator it = o->begin();
+    std::list<IOperand const*>::const_iterator it = this->_operands.begin();
     std::string _itParamValue = (*it)->toString();
     _itParamValue = _itParamValue.substr(_itParamValue.find_first_of('(', 0) + 1,
         _itParamValue.find_first_of(')', 0) - (_itParamValue.find_first_of('(', 0) + 1));
     if ((*it)->getType() != _oType || _itParamValue != _paramValue) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) << UNDERLINE "assert "
-            << param << WHITE " is " CHERRY "false" WHITE ";" << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+            << param << " is " RED "false" WHITE ";" << std::endl;
         return false;
     } else {
-        std::cout << UNDERLINE "assert " << param << WHITE " is " GREEN "true" WHITE ";" << std::endl;
+        std::cout << param << " is " GREEN "true" WHITE ";" << std::endl;
     }
     return true;
 }
 
-bool Processing::processPrint(std::list<IOperand const*> *const o) {
-    if (!o->size()) {
+bool Processing::processExit() { return true; }
+
+bool Processing::processPop() {
+    if (!this->_operands.size()) {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+            "command queue is empty now, \'pop\' can't unstack value from top;" << std::endl;
+        return false;
+    } else {
+        std::cout << "removed \'" RED << (*(this->_operands.begin()))->toString() << WHITE "\';" << std::endl;
+        delete *(this->_operands.begin());
+        this->_operands.pop_front();
+    }
+    return true;
+}
+
+void Processing::baseDisplayOperand(IOperand const *it, size_t i) {
+    std::cout << std::setiosflags(std::ios::right) << "[" UNDERLINE << std::setw(6) << i << WHITE "]: " << it->toString();
+    if (Int32 < it->getType()) {
+        std::cout << ", precision = " << it->getPrecision();
+    }
+    std::cout << ';' << std::endl;
+}
+
+bool Processing::processPrint() {
+    if (!this->_operands.size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "command queue is empty now, \'print\' can't display top value;" << std::endl;
         return false;
     } else {
-        std::cout << "\'print\' top value: \'" << (*(o->begin()))->toString() << "\';" << std::endl;
+        baseDisplayOperand(*(this->_operands.begin()), this->_operands.size());
     }
     return true;
 }
 
-bool Processing::processExit(std::list<IOperand const*> *const o) { (void)o; return true; }
+bool Processing::processDump() {
+    if (!this->_operands.size()) {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+            "command queue is empty now, \'dump\' can't print all stack values;" << std::endl;
+        return false;
+    } else {
+        size_t elementNumber = ~0ULL;
+        std::list<IOperand const*>::const_iterator it = this->_operands.begin();
+        while (this->_operands.end() != it) {
+            baseDisplayOperand(*it++, ++elementNumber);
+        }
+    }
+    return true;
+}
 
-bool Processing::baseProcessAriphmetic(std::list<IOperand const *> *const o, std::string const command, char const op) {
-    if (2 > o->size()) {
+bool Processing::baseProcessAriphmetic(std::string const command, char const op) {
+    if (2 > this->_operands.size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "can't process \'"
             << command << "\' because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
-        IOperand const *leftOperand = *(o->begin());
-        IOperand const *rightOperand = *(++o->begin());
+        IOperand const *leftOperand = *(this->_operands.begin());
+        IOperand const *rightOperand = *(++this->_operands.begin());
         IOperand const *result = NULL;
 
-        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN << op << WHITE " \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*leftOperand).toString() << "\' " BLUE << op << WHITE " \'" << (*rightOperand).toString() << "\' = ";
         switch (op) {
             case '+': result = *leftOperand + *rightOperand; break;
             case '-': result = *leftOperand - *rightOperand; break;
@@ -175,8 +191,8 @@ bool Processing::baseProcessAriphmetic(std::list<IOperand const *> *const o, std
         if (result) {
             std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
             delete leftOperand; delete rightOperand;
-            o->pop_front(); o->pop_front();
-            o->push_front(result);
+            this->_operands.pop_front(); this->_operands.pop_front();
+            this->_operands.push_front(result);
         } else {
             std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'" << command << "\';" << std::endl;
             return false;
@@ -185,38 +201,32 @@ bool Processing::baseProcessAriphmetic(std::list<IOperand const *> *const o, std
     return true;
 }
 
-bool Processing::processAdd(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "add", '+'); }
-bool Processing::processSub(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "sub", '-'); }
-bool Processing::processMul(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "mul", '*'); }
-bool Processing::processDiv(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "div", '/'); }
-bool Processing::processMod(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "mod", '%'); }
+bool Processing::processAdd() { return baseProcessAriphmetic("add", '+'); }
+bool Processing::processSub() { return baseProcessAriphmetic("sub", '-'); }
+bool Processing::processMul() { return baseProcessAriphmetic("mul", '*'); }
+bool Processing::processDiv() { return baseProcessAriphmetic("div", '/'); }
+bool Processing::processMod() { return baseProcessAriphmetic("mod", '%'); }
 
-bool Processing::processPop(std::list<IOperand const*> *const o) {
-    if (!o->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "command queue is empty now, \'pop\' can't unstack value from top;" << std::endl;
-        return false;
-    } else {
-        std::cout << "pop \'" CHERRY << (*(o->begin()))->toString() << WHITE "\' value from the top of the stack;" << std::endl;
-        delete *(o->begin());
-        o->pop_front();
-    }
-    return true;
-}
+void Processing::displayUnexecutedCommands(std::vector<std::string> *commandQueue, std::vector<std::string>::iterator &it, size_t const &commandsCounter) {
+    std::cout << WARN_PREFIX "at least [" UNDERLINE << std::setw(6) << (std::distance(commandQueue->begin(),
+        std::find_if(it, commandQueue->end(), [](std::string const &str){ return str == "exit"; })) - commandsCounter)
+        << WHITE "] commands was un-executed after \'exit\':" << std::endl;
 
-bool Processing::processDump(std::list<IOperand const*> *const o) {
-    if (!o->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "command queue is empty now, \'dump\' can't print all stack values;" << std::endl;
-        return false;
-    } else {
-        size_t elementNumber = ~0ULL;
-        std::list<IOperand const*>::const_iterator it = o->begin();
-        while (o->end() != it) {
-            std::cout << std::setiosflags(std::ios::right) << "[" UNDERLINE << std::setw(6)
-                << ++elementNumber << WHITE "] - precision \'" UNDERLINE << std::setw(3) << (*it)->getPrecision() << WHITE "\', " << (*it)->toString() << ';' << std::endl;
-            ++it;
+    bool isBreak = false;
+    std::vector<std::string>::iterator i = commandQueue->begin();
+    while (commandQueue->end() != i) {
+        std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), i) + 1 << WHITE "]: \'";
+        if (i < it) {
+            std::cout << DIM CYAN;
+        } else {
+            if (*i == "exit") {
+                std::cout << DIM MAGENTA;
+                isBreak = true;
+            } else {
+                std::cout << BLUE;
+            }
         }
+        std::cout << *i++ << WHITE "\';" << std::endl;
+        if (isBreak) { break ; }
     }
-    return true;
 }
