@@ -22,11 +22,14 @@ private:
 
     bool processPrint(std::list<IOperand const*> *const o);
     bool processExit(std::list<IOperand const*> *const o);
+
+    bool baseProcessAriphmetic(std::list<IOperand const *> *const o, std::string const command, char const op);
     bool processAdd(std::list<IOperand const*> *const o);
     bool processSub(std::list<IOperand const*> *const o);
     bool processMul(std::list<IOperand const*> *const o);
     bool processDiv(std::list<IOperand const*> *const o);
     bool processMod(std::list<IOperand const*> *const o);
+
     bool processPop(std::list<IOperand const*> *const o);
     bool processDump(std::list<IOperand const*> *const o);
 

@@ -140,115 +140,43 @@ bool AVMLaunchProcessing::processPrint(std::list<IOperand const*> *const o) {
 
 bool AVMLaunchProcessing::processExit(std::list<IOperand const*> *const o) { (void)o; return true; }
 
-bool AVMLaunchProcessing::processAdd(std::list<IOperand const*> *const o) {
-    if  (2 > o->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "can't process \'add\' command because at the top of the stack less then 2 values;" << std::endl;
+bool AVMLaunchProcessing::baseProcessAriphmetic(std::list<IOperand const *> *const o, std::string const command, char const op) {
+    if (2 > o->size()) {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "can't process \'"
+            << command << "\' because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
         IOperand const *leftOperand = *(o->begin());
         IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "+" WHITE " \'" << (*rightOperand).toString() << "\' = ";
-        IOperand const *result = *leftOperand + *rightOperand;
+        IOperand const *result = NULL;
+
+        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN << op << WHITE " \'" << (*rightOperand).toString() << "\' = ";
+        switch (op) {
+            case '+': result = *leftOperand + *rightOperand; break;
+            case '-': result = *leftOperand - *rightOperand; break;
+            case '*': result = *leftOperand * *rightOperand; break;
+            case '/': result = *leftOperand / *rightOperand; break;
+            case '%': result = *leftOperand % *rightOperand; break;
+            default: break;
+        }
+
         if (result) {
             std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'add\';" << std::endl;
+            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'" << command << "\';" << std::endl;
             return false;
         }
     }
     return true;
 }
 
-bool AVMLaunchProcessing::processSub(std::list<IOperand const*> *const o) {
-    if (2 > o->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "can't process \'sub\' command because at the top of the stack less then 2 values;" << std::endl;
-        return false;
-    } else {
-        IOperand const *leftOperand = *(o->begin());
-        IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "-" WHITE " \'" << (*rightOperand).toString() << "\' = ";
-        IOperand const *result = *leftOperand - *rightOperand;
-        if (result) {
-            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
-            o->pop_front(); o->pop_front();
-            o->push_front(result);
-        } else {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'sub\';" << std::endl;
-            return false;
-        }
-    }
-    return true;
-}
-
-bool AVMLaunchProcessing::processMul(std::list<IOperand const*> *const o) {
-    if (2 > o->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "can't process \'mul\' command because at the top of the stack less then 2 values;" << std::endl;
-        return false;
-    } else {
-        IOperand const *leftOperand = *(o->begin());
-        IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "*" WHITE " \'" << (*rightOperand).toString() << "\' = ";
-        IOperand const *result = *leftOperand * *rightOperand;
-        if (result) {
-            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
-            o->pop_front(); o->pop_front();
-            o->push_front(result);
-        } else {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'mul\';" << std::endl;
-            return false;
-        }
-    }
-    return true;
-}
-
-bool AVMLaunchProcessing::processDiv(std::list<IOperand const*> *const o) {
-    if (2 > o->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "can't process \'div\' command because at the top of the stack less then 2 values;" << std::endl;
-        return false;
-    } else {
-        IOperand const *leftOperand = *(o->begin());
-        IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "/" WHITE " \'" << (*rightOperand).toString() << "\' = ";
-        IOperand const *result = *leftOperand / *rightOperand;
-        if (result) {
-            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
-            o->pop_front(); o->pop_front();
-            o->push_front(result);
-        } else {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'div\';" << std::endl;
-            return false;
-        }
-    }
-    return true;
-}
-
-bool AVMLaunchProcessing::processMod(std::list<IOperand const*> *const o) {
-    if (2 > o->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "can't process \'mod\' command because at the top of the stack less then 2 values;" << std::endl;
-        return false;
-    } else {
-        IOperand const *leftOperand = *(o->begin());
-        IOperand const *rightOperand = *(++o->begin());
-        std::cout << "\'" << (*leftOperand).toString() << "\' " CYAN "%" WHITE " \'" << (*rightOperand).toString() << "\' = ";
-        IOperand const *result = *leftOperand % *rightOperand;
-        if (result) {
-            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
-            o->pop_front(); o->pop_front();
-            o->push_front(result);
-        } else {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'mod\';" << std::endl;
-            return false;
-        }
-    }
-    return true;
-}
+bool AVMLaunchProcessing::processAdd(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "add", '+'); }
+bool AVMLaunchProcessing::processSub(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "sub", '-'); }
+bool AVMLaunchProcessing::processMul(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "mul", '*'); }
+bool AVMLaunchProcessing::processDiv(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "div", '/'); }
+bool AVMLaunchProcessing::processMod(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "mod", '%'); }
 
 bool AVMLaunchProcessing::processPop(std::list<IOperand const*> *const o) {
     if (!o->size()) {
