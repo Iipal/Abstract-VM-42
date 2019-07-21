@@ -8,7 +8,7 @@ template<typename T>
 class Operand : public IOperand {
 public:
     Operand<T>() { }
-    Operand<T>(eOperandType const &type, std::string const &valueStr, T value)
+    Operand<T>(eOperandType const &type, std::string const &valueStr, T const &value)
      : _type(type), _valueStr(valueStr), _value(value) { }
     Operand<T>(Operand<T> const &copy) { *this = copy; }
     virtual ~Operand<T>() { }
@@ -27,7 +27,7 @@ public:
         if (Double == this->_type || Float == this->_type) {
             const size_t _valueFloatingPointDot = this->_valueStr.find_first_of('.', 0);
             if (_valueFloatingPointDot < this->_valueStr.length()) {
-                std::string _valueAfterDot = this->_valueStr.substr(_valueFloatingPointDot + 1, this->_valueStr.length() - _valueFloatingPointDot);
+                std::string _valueAfterDot = this->_valueStr.substr(_valueFloatingPointDot + 1, this->_valueStr.length() - _valueFloatingPointDot - 2);
                 _valueAfterDot.erase(std::find_if(_valueAfterDot.rbegin(), _valueAfterDot.rend(), [](int ch){ return ch != '0'; }).base(), _valueAfterDot.end());
                 _precision = _valueAfterDot.length();
             }
@@ -135,22 +135,7 @@ public:
         return out;
     }
 
-    std::string const &toString(void) const {
-        static std::string outStr;
-        outStr.clear();
-
-        std::string _typeStr;
-        size_t i = ~0ULL;
-        while (MaxOperandTypes > ++i) {
-            if (this->_type == i) {
-                _typeStr = std::string(_validPushParamTypes[i]);
-                break ;
-            }
-        }
-
-        outStr = std::string(_typeStr + "(" + this->_valueStr + ")");
-        return outStr;
-    }
+    std::string const &toString(void) const { return this->_valueStr; }
 private:
     eOperandType _type;
     std::string _valueStr;

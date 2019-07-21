@@ -37,7 +37,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         free(_fepBuff);
     }
 
-    std::cout << "    AVM " ORANGE "standard" WHITE " input mode (" UNDERLINE "'h' for details" WHITE "):" << std::endl << std::endl;
+    std::cout << "    AVM " ORANGE "standard" WHITE " input mode (" UNDERLINE "'h' for details" WHITE "):" << std::endl;
 
     const std::string _specCommands[MAX_SPECIFIED_COMMANDS] = { "list", "clean", "delete" };
     const std::string _shortSpecCommands[MAX_SPECIFIED_COMMANDS] = { "l", "c", "d" };
@@ -53,7 +53,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
         std::getline(std::cin, _tmp);
         if (std::cin.bad() || std::cin.eof() || std::cin.fail()) {
-            std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "Error occured in standard input;" << std::endl;
+            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "Error occured in standard input;" << std::endl;
             _exit = true;
             isValidInput = false;
         } else {
@@ -108,7 +108,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
         return outCommandsQueue;
     }
 
-    std::cout << "    AVM " BLUE "pipe" WHITE " input mode:" << std::endl << std::endl;
+    std::cout << "    AVM " BLUE "pipe" WHITE " input mode:" << std::endl;
 
     std::string _tmp;
     bool isValid = true;
@@ -117,7 +117,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
         if (!std::getline(std::cin, _tmp)) {
             _exit = true;
         } else if (std::cin.bad() || std::cin.fail()) {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "error occured in pipe input;" << std::endl;
+            std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "error occured in pipe input;" << std::endl;
             _exit = true;
             isValid = false;
         } else if (_tmp.length()) {
@@ -133,12 +133,12 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
     }
 
     if (false == isValid) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+        std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "invalid command queue. " UNDERLINE RED "can't execute AVM" WHITE ";" << std::endl;
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
-        std::cout << " " UNDERLINE "successful" WHITE " read command queue from a pipe;" << std::endl << std::endl;
+        std::cout << " " UNDERLINE "successful" WHITE " read command queue from a pipe;" << std::endl;
     }
     return outCommandsQueue;
 }
@@ -150,7 +150,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
         return outCommandsQueue;
     }
 
-    std::cout << "    AVM " CYAN "file" WHITE " input mode:" << std::endl << std::endl;
+    std::cout << "    AVM " CYAN "file" WHITE " input mode:" << std::endl;
 
     bool isValid = true;
     std::fstream _file(fileName);
@@ -173,7 +173,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
             }
         }
         if (isValid && !outCommandsQueue->size()) {
-            std::cout << ERR_REPORT_PREFIX "command queue is empty, can't execute AVM." << std::endl;
+            std::cout << std::endl << ERR_REPORT_PREFIX "command queue is empty, can't execute AVM." << std::endl;
             isValid = false;
         }
     } else {
@@ -182,21 +182,21 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
     }
 
     if (false == isValid) {
-        std::cout << CYAN "AVM" WHITE " " MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
+        std::cout << std::endl << CYAN "AVM" WHITE " " MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
             << std::setw(6) << Reader::getGlobalErrorsCounter()
             << WHITE "] error occured before AVM was executed,"
             " try to fix all error reports above for successful AVM work;" << std::endl;
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
-        std::cout << UNDERLINE "successful" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl << std::endl;
+        std::cout << UNDERLINE "successful" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl;
     }
     return outCommandsQueue;
 }
 
 /* private methods */
 void Reader::printHelpInfoForStandardInput(void) const {
-    std::cout << INVERT "    AVM help info:    " << WHITE << std::endl << std::setiosflags(std::ios::left)
+    std::cout << std::endl << std::setiosflags(std::ios::left)
         << "| "        " command "       " | " << std::setw(14) << "parameter"     << std::setw(95) << ": description" << '|' << std::endl
         << "| " INVERT "exit     " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stop to execute command queue and exit from AVM (necessary at the end of command queue);" << '|' << std::endl
         << "| " INVERT "print    " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Asserts that the value at the top of the stack is an 8-bit integer;" << '|' << std::endl
@@ -215,7 +215,7 @@ void Reader::printHelpInfoForStandardInput(void) const {
         << "| " INVERT "delete/d " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Remove last added command from queue;" << '|' << std::endl
         << "| " INVERT "quit/q   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and quit without execute AVM;" << '|' << std::endl
         << "| " INVERT "list/l   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Show list of currently added commands to queue;" << '|' << std::endl
-        << "| " INVERT "help/h   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
+        << "| " INVERT "help/h   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl << std::endl;
 }
 
 void Reader::baseStringPrepareAfterReading(std::string &command) const {
@@ -235,7 +235,6 @@ bool Reader::specList(std::vector<std::string> *const commandQueue) const {
     while (commandQueue->size() > ++i) {
         std::cout << "    [" UNDERLINE << std::setw(6) << i + 1 << WHITE "]: " << (*commandQueue)[i] << std::endl;
     }
-
     return true;
 }
 
@@ -417,7 +416,7 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
                     }
                     case Int32: {
                         int32_t const _trueValue = std::stoi(_paramValue);
-                        int32_t const _resValue = static_cast<int32_t>(_trueValue) * (isNegative ? -1 : 1);
+                        int16_t const _resValue = static_cast<int32_t>(_trueValue) * (isNegative ? -1 : 1);
                         std::string _resStrValue = std::to_string(_resValue);
                         _resStrValue.append(")");
                         std::string _srcCopy = commandParam.substr(0, _paramValueTypeParamStartBracketPos + 1);

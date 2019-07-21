@@ -3,8 +3,8 @@
 Processing::Processing() { }
 Processing::Processing(const Processing &copy) { *this = copy; }
 Processing::~Processing() {
-    std::list<IOperand const*>::iterator it = this->_operands.begin();
-    while (this->_operands.end() != it) {
+    std::list<IOperand const*>::iterator it = _operands.begin();
+    while (_operands.end() != it) {
         delete *it++;
     }
 }
@@ -15,7 +15,7 @@ Processing &Processing::operator=(const Processing &copy) {
 }
 
 bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
-    std::cout << "    AVM " UNDERLINE "start" WHITE " executing:" << std::endl << std::endl;
+    std::cout << std::endl << "    AVM " UNDERLINE "start" WHITE " executing:" << std::endl << std::endl;
 
     bool isValid = true;
     bool _exit = false;
@@ -80,14 +80,14 @@ bool Processing::processPush(std::string const &param) {
         }
     }
 
-    this->_operands.push_front(gOFactory.createOperand(_oType, _paramValue));
-    std::cout << "added \'" BLUE << _paramType << "(" << _paramValue << WHITE ")\';" << std::endl;
+    _operands.push_front(gOFactory.createOperand(_oType, _paramValue));
+    std::cout << " push \'" BLUE << _paramType << "(" << _paramValue << ")" WHITE "\';" << std::endl;
     return true;
 }
 
 bool Processing::processAssert(std::string const &param) {
-    if (!this->_operands.size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "command queue is empty now, can't process \'assert\';" << std::endl;
+    if (!_operands.size()) {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "any values currently pushed, can't process \'assert\';" << std::endl;
         return false;
     }
 
@@ -105,7 +105,7 @@ bool Processing::processAssert(std::string const &param) {
         }
     }
 
-    std::list<IOperand const*>::const_iterator it = this->_operands.begin();
+    std::list<IOperand const*>::const_iterator it = _operands.begin();
     std::string _itParamValue = (*it)->toString();
     _itParamValue = _itParamValue.substr(_itParamValue.find_first_of('(', 0) + 1,
         _itParamValue.find_first_of(')', 0) - (_itParamValue.find_first_of('(', 0) + 1));
@@ -122,14 +122,14 @@ bool Processing::processAssert(std::string const &param) {
 bool Processing::processExit() { return true; }
 
 bool Processing::processPop() {
-    if (!this->_operands.size()) {
+    if (!_operands.size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "command queue is empty now, \'pop\' can't unstack value from top;" << std::endl;
+            "any values currently pushed, \'pop\' can't unstack value from top;" << std::endl;
         return false;
     } else {
-        std::cout << "removed \'" RED << (*(this->_operands.begin()))->toString() << WHITE "\';" << std::endl;
-        delete *(this->_operands.begin());
-        this->_operands.pop_front();
+        std::cout << " pop \'" RED << (*(_operands.begin()))->toString() << WHITE "\';" << std::endl;
+        delete *(_operands.begin());
+        _operands.pop_front();
     }
     return true;
 }
@@ -143,25 +143,25 @@ void Processing::baseDisplayOperand(IOperand const *it, size_t i) {
 }
 
 bool Processing::processPrint() {
-    if (!this->_operands.size()) {
+    if (!_operands.size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "command queue is empty now, \'print\' can't display top value;" << std::endl;
+            "any values currently pushed, \'print\' can't display top value;" << std::endl;
         return false;
     } else {
-        baseDisplayOperand(*(this->_operands.begin()), this->_operands.size());
+        baseDisplayOperand(*(_operands.begin()), _operands.size());
     }
     return true;
 }
 
 bool Processing::processDump() {
-    if (!this->_operands.size()) {
+    if (!_operands.size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "command queue is empty now, \'dump\' can't print all stack values;" << std::endl;
+            "any values currently pushed, \'dump\' can't print all stack values;" << std::endl;
         return false;
     } else {
         size_t elementNumber = ~0ULL;
-        std::list<IOperand const*>::const_iterator it = this->_operands.begin();
-        while (this->_operands.end() != it) {
+        std::list<IOperand const*>::const_iterator it = _operands.begin();
+        while (_operands.end() != it) {
             baseDisplayOperand(*it++, ++elementNumber);
         }
     }
@@ -169,13 +169,13 @@ bool Processing::processDump() {
 }
 
 bool Processing::baseProcessAriphmetic(std::string const command, char const op) {
-    if (2 > this->_operands.size()) {
+    if (2 > _operands.size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "can't process \'"
             << command << "\' because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
-        IOperand const *leftOperand = *(this->_operands.begin());
-        IOperand const *rightOperand = *(++this->_operands.begin());
+        IOperand const *leftOperand = *(_operands.begin());
+        IOperand const *rightOperand = *(++_operands.begin());
         IOperand const *result = NULL;
 
         std::cout << "\'" << (*leftOperand).toString() << "\' " BLUE << op << WHITE " \'" << (*rightOperand).toString() << "\' = ";
@@ -191,8 +191,8 @@ bool Processing::baseProcessAriphmetic(std::string const command, char const op)
         if (result) {
             std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
             delete leftOperand; delete rightOperand;
-            this->_operands.pop_front(); this->_operands.pop_front();
-            this->_operands.push_front(result);
+            _operands.pop_front(); _operands.pop_front();
+            _operands.push_front(result);
         } else {
             std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'" << command << "\';" << std::endl;
             return false;
