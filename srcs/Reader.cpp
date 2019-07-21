@@ -55,10 +55,9 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
             std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "Error occured in standard input;" << std::endl;
             _exit = true;
             isValidInput = false;
-        } else  {
-            const size_t isCommentaryExistAfterCommand = _tmp.find_first_of(';', 0);
-            if (isCommentaryExistAfterCommand < _tmp.length() && _tmp != ";;") {
-                _tmp = _tmp.substr(0, isCommentaryExistAfterCommand);
+        } else {
+            if (";;" != _tmp) {
+                baseStringPrepareAfterReading(_tmp);
             }
             if (_tmp.size()) {
                 if (";;" == _tmp) {
@@ -91,8 +90,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
     }
 
     if (isValidInput && !outCommandsQueue->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "command queue is empty, " UNDERLINE RED "can't execute AVM" WHITE ";" << std::endl;
+        std::cout << WARN_PREFIX "command queue is empty, can't execute AVM;" << std::endl;
         isValidInput = false;
     }
     if (!isValidInput) {
@@ -121,12 +119,9 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
             std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "error occured in pipe input;" << std::endl;
             _exit = true;
             isValid = false;
-        } else if (_tmp.size()) {
-            if (_tmp.compare(0, 1, ";")) {
-                const size_t isCommentaryExistAfterCommand = _tmp.find_first_of(';', 0);
-                if (isCommentaryExistAfterCommand < _tmp.length()) {
-                    _tmp = _tmp.substr(0, isCommentaryExistAfterCommand);
-                }
+        } else if (_tmp.length()) {
+            baseStringPrepareAfterReading(_tmp);
+            if (_tmp.length()) {
                 if (validatingReadedCommand(_tmp)) {
                     outCommandsQueue->push_back(_tmp);
                 } else {
@@ -148,57 +143,65 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
 }
 
 std::vector<std::string> *Reader::readFileInput(std::string const &fileName) const {
-    if (fileName.compare(fileName.length() - 4, 4, ".avm")) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-            "file \'" CYAN << fileName << WHITE "\' extension must to be: \'.avm\', for example: \'";
-        size_t const fileNameLastDot = fileName.find_last_of('.', fileName.length());
-        if (fileNameLastDot < fileName.length()) {
-            std::cout << fileName.substr(0, fileNameLastDot);
-        } else {
-            std::cout << fileName;
-        }
-        std::cout << ".avm\';" << std::endl;
-        return NULL;
-    }
-    std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
-    if (!outCommandsQueue) {
-        std::cout << ERR_REPORT_PREFIX "cannot allocate memory;" << std::endl;
-        return outCommandsQueue;
-    }
-
-    std::cout << "    AVM " CYAN "file" WHITE " input mode:" << std::endl;
-
     bool isValid = true;
-    std::fstream _file(fileName);
-    if (_file.is_open()) {
-        size_t readedLines = 0;
-        std::string _tmp;
-        while (std::getline(_file, _tmp)) {
-            ++readedLines;
-            if (_tmp.size()) {
-                if (_tmp.compare(0, 1, ";")) {
-                    const size_t isCommentaryExistAfterCommand = _tmp.find_first_of(';', 0);
-                    if (isCommentaryExistAfterCommand < _tmp.length()) {
-                        _tmp = _tmp.substr(0, isCommentaryExistAfterCommand);
-                    }
-                    if (validatingReadedCommand(_tmp)) {
-                        outCommandsQueue->push_back(_tmp);
-                    } else {
-                        std::cout << REPORT_PREFIX "error on line: [ " UNDERLINE
-                            << std::setw(5) << readedLines << WHITE " ];" << std::endl;
-                        isValid = false;
-                    }
-                }
+
+    if (fileName.length() >= 4) {
+        if (fileName.compare(fileName.length() - 4, 4, ".avm")) {
+            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+                "file \'" CYAN << fileName << WHITE "\' extension must to be: \'.avm\', for example: \'";
+            size_t const fileNameLastDot = fileName.find_last_of('.', fileName.length());
+            if (fileNameLastDot < fileName.length()) {
+                std::cout << fileName.substr(0, fileNameLastDot);
+            } else {
+                std::cout << fileName;
             }
-        }
-        if (isValid && !outCommandsQueue->size()) {
-            std::cout << ERR_REPORT_PREFIX "command queue is empty, can't execute AVM." << std::endl;
+            std::cout << ".avm\';" << std::endl;
             isValid = false;
         }
     } else {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "\'" << fileName << "\' file is invalid." << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "file \'" CYAN << fileName << WHITE "\' hasn't extension \'.avm\';" << std::endl;
         isValid = false;
     }
+
+    std::vector<std::string> *outCommandsQueue = NULL;
+    if (isValid) {
+        outCommandsQueue = new std::vector<std::string>();
+        if (!outCommandsQueue) {
+            std::cout << ERR_REPORT_PREFIX "cannot allocate memory;" << std::endl;
+            return outCommandsQueue;
+        }
+
+        std::cout << "    AVM " CYAN "file" WHITE " input mode:" << std::endl;
+
+        std::fstream _file(fileName);
+        if (_file.is_open()) {
+            size_t readedLines = 0;
+            std::string _tmp;
+            while (std::getline(_file, _tmp)) {
+                ++readedLines;
+                if (_tmp.length()) {
+                    baseStringPrepareAfterReading(_tmp);
+                    if (_tmp.length()) {
+                        if (validatingReadedCommand(_tmp)) {
+                            outCommandsQueue->push_back(_tmp);
+                        } else {
+                            std::cout << REPORT_PREFIX "error on line: [ " UNDERLINE
+                                << std::setw(5) << readedLines << WHITE " ];" << std::endl;
+                            isValid = false;
+                        }
+                    }
+                }
+            }
+            if (isValid && !outCommandsQueue->size()) {
+                std::cout << ERR_REPORT_PREFIX "command queue is empty, can't execute AVM." << std::endl;
+                isValid = false;
+            }
+        } else {
+            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "\'" << fileName << "\' file is invalid." << std::endl;
+            isValid = false;
+        }
+    }
+
     if (false == isValid) {
         std::cout << CYAN "AVM" WHITE " " MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
             << std::setw(6) << Reader::getGlobalErrorsCounter()
@@ -236,9 +239,17 @@ void Reader::printHelpInfoForStandardInput(void) const {
         << "| " INVERT "help/h   " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Print this help info;" << '|' << std::endl;
 }
 
+void Reader::baseStringPrepareAfterReading(std::string &command) const {
+    const size_t isCommentaryExistAfterCommand = command.find_first_of(';', 0);
+    if (isCommentaryExistAfterCommand < command.length()) {
+        command = command.substr(0, isCommentaryExistAfterCommand);
+    }
+    command.erase(std::find_if(command.rbegin(), command.rend(), [](int ch) { return !std::isspace(ch); }).base(), command.end());
+}
+
 bool Reader::specList(std::vector<std::string> *const commandQueue) const {
     if (!commandQueue->size()) {
-        std::cout << WARN_PREFIX "can't show list of commands, queue currently is empty;" << std::endl;
+        std::cout << WARN_PREFIX "can't show list of commands, queue is empty;" << std::endl;
     }
 
     size_t i = ~0ULL;
@@ -315,7 +326,7 @@ bool Reader::validatingReadedCommand(std::string &command) const {
 
 bool Reader::validatingCommandParam(std::string &commandParam) const {
     if (' ' != commandParam[0]) {
-        std::cout << ERR_REPORT_PREFIX "missed space \'" INVERT " " WHITE "\' after command with param;" << std::endl;
+        std::cout << ERR_REPORT_PREFIX "missed space \'" INVERT " " WHITE "\' after command which must to contain parameter;" << std::endl;
         return false;
     } else {
         commandParam = commandParam.substr(1, commandParam.length() - 1);

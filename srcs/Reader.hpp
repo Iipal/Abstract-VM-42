@@ -44,10 +44,9 @@ public:
     static size_t const &getGlobalErrorsCounter(void) { return Reader::globalErrorsCounter; }
 
 private:
-    bool validatingReadedCommand(std::string &command) const;
-    bool validatingCommandParam(std::string &commandParam) const;
-
     void printHelpInfoForStandardInput(void) const;
+
+    void baseStringPrepareAfterReading(std::string &command) const;
 
     bool specList(std::vector<std::string> *const commandQueue) const;
     bool specClean(std::vector<std::string> *const commandQueue) const;
@@ -56,6 +55,9 @@ private:
     typedef bool (Reader::*fnptrInputSpecCommands)(std::vector<std::string> *const) const;
     const fnptrInputSpecCommands fnptrSpecFuncs[MAX_SPECIFIED_COMMANDS] = {
         &Reader::specList, &Reader::specClean, &Reader::specDelete };
+
+    bool validatingReadedCommand(std::string &command) const;
+    bool validatingCommandParam(std::string &commandParam) const;
 
     static size_t globalErrorsCounter;
 };

@@ -39,7 +39,6 @@ IOperand const *OperandFactory::createFloat(std::string const &value) const {
     if (_valueFloatingPointDot < _value.length()) {
         std::string _valueAfterDot = _value.substr(_valueFloatingPointDot + 1, _value.length() - _valueFloatingPointDot);
         _valueAfterDot.erase(std::find_if(_valueAfterDot.rbegin(), _valueAfterDot.rend(), [](int ch){ return ch != '0'; }).base(), _valueAfterDot.end());
-        std::string _newValue = std::string(_value);
         _value.erase(_valueFloatingPointDot + 1);
         _value.append(_valueAfterDot);
     }
@@ -51,7 +50,6 @@ IOperand const *OperandFactory::createDouble(std::string const &value) const {
     if (_valueFloatingPointDot < _value.length()) {
         std::string _valueAfterDot = _value.substr(_valueFloatingPointDot + 1, _value.length() - _valueFloatingPointDot);
         _valueAfterDot.erase(std::find_if(_valueAfterDot.rbegin(), _valueAfterDot.rend(), [](int ch){ return ch != '0'; }).base(), _valueAfterDot.end());
-        std::string _newValue = std::string(_value);
         _value.erase(_valueFloatingPointDot + 1);
         _value.append(_valueAfterDot);
     }
