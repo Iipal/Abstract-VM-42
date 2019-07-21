@@ -1,7 +1,7 @@
 NAME := avm
 NPWD := $(CURDIR)/$(NAME)
 
-CC_BASE := clang++ -march=native -mtune=native -std=c++11
+CC_BASE := g++ -march=native -mtune=native -std=c++11
 
 CC := $(CC_BASE) -Ofast -flto -pipe
 CC_DEBUG := $(CC_BASE) -g3 -D DEBUG -fsanitize=address
