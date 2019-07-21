@@ -7,7 +7,7 @@ CC := $(CC_BASE) -Ofast -flto -pipe
 CC_DEBUG := $(CC_BASE) -g3 -D DEBUG -fsanitize=address
 CFLAGS := -Wall -Wextra -Werror -Wunused
 
-SRCS := $(abspath $(wildcard srcs/*.cpp srcs/*/*.cpp srcs/*/*/*.cpp))
+SRCS := $(abspath $(wildcard srcs/*.cpp))
 OBJ := $(SRCS:.cpp=.o)
 
 DEL := rm -rf
