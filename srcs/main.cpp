@@ -1,6 +1,6 @@
 #include "Reader.hpp"
 #include "OperandFactory.hpp"
-#include "AVMLaunchProcessing.hpp"
+#include "Processing.hpp"
 
 int main(int argc, char *argv[]) {
     --argc; ++argv;
@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
     }
 
     if (commandQueue) {
-        AVMLaunchProcessing avmLP;
-        avmLP.startProcessing(commandQueue);
+        Processing p;
+        p.startProcessing(commandQueue);
         delete commandQueue;
     }
 }

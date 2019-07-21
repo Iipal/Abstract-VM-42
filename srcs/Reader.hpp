@@ -18,6 +18,7 @@
 #define CHERRY "\033[38;5;197m"
 #define MAGENTA "\033[38;5;206m"
 
+#define DIM "\033[2m"
 #define INVERT "\033[7m"
 #define UNDERLINE "\033[4m"
 

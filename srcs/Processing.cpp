@@ -1,18 +1,17 @@
-#include "AVMLaunchProcessing.hpp"
+#include "Processing.hpp"
 
-AVMLaunchProcessing::AVMLaunchProcessing() { }
-AVMLaunchProcessing::AVMLaunchProcessing(const AVMLaunchProcessing &copy) { *this = copy; }
-AVMLaunchProcessing::~AVMLaunchProcessing() { }
+Processing::Processing() { }
+Processing::Processing(const Processing &copy) { *this = copy; }
+Processing::~Processing() { }
 
-AVMLaunchProcessing &AVMLaunchProcessing::operator=(const AVMLaunchProcessing &copy) {
+Processing &Processing::operator=(const Processing &copy) {
     if (this != &copy) { *this = copy; }
     return *this;
 }
 
-bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue) {
+bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
     std::cout << "    AVM " GREEN "start" WHITE " executing:" << std::endl;
-
-    std::list<IOperand const*> operands;
+    std::list<IOperand const *> operands;
 
     bool isValid = true;
     bool _exit = false;
@@ -45,20 +44,26 @@ bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue
     }
 
     if (isValid && _exit) {
-        std::cout << " " UNDERLINE GREEN "successful" WHITE " executed AVM;" << std::endl;
         if (commandsCounter != commandQueue->size()) {
             std::cout << WARN_PREFIX "at least [" UNDERLINE << std::setw(6) << (std::distance(commandQueue->begin(),
                 std::find_if(it, commandQueue->end(), [](std::string const &str){ return str == "exit"; })) - commandsCounter)
                 << WHITE "] commands was un-executed after \'exit\':" << std::endl;
-
-            while (commandQueue->end() != it) {
-                if ((*it) == "exit") {
-                    break ;
+            std::vector<std::string>::iterator i = commandQueue->begin();
+            while (commandQueue->end() != i) {
+                if (i < it) {
+                    std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), i) + 1 << WHITE "] \'" DIM << (*i) << WHITE "\';" << std::endl;
                 } else {
-                    std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), it) + 1 << WHITE "] \'" MAGENTA << (*it) << WHITE "\';" << std::endl;
-                    ++it;
+                    if ((*i) == "exit") {
+                        std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), i) + 1 << WHITE "] \'" DIM RED << (*i) << WHITE "\';" << std::endl;
+                        break ;
+                    } else {
+                        std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), i) + 1 << WHITE "] \'" CHERRY << (*i) << WHITE "\';" << std::endl;
+                    }
                 }
+                ++i;
             }
+        } else {
+            std::cout << " " UNDERLINE GREEN "successful" WHITE " executed AVM;" << std::endl;
         }
     } else if (isValid && !_exit) {
         std::cout << WARN_PREFIX "executing was stopped without \'" CYAN "exit" WHITE "\';" << std::endl;
@@ -68,12 +73,19 @@ bool AVMLaunchProcessing::startProcessing(std::vector<std::string> *commandQueue
             << WHITE "] error occured while AVM was executed,"
             " try to fix all error reports above for successful AVM work;" << std::endl;
     }
+    if (operands.size()) {
+        std::list<IOperand const *>::iterator it = operands.begin();
+        while (operands.end() != it) {
+            delete *it;
+            ++it;
+        }
+    }
     return isValid;
 }
 
 /* private methods */
 
-bool AVMLaunchProcessing::processPush(std::string const &param, std::list<IOperand const*> *const o) {
+bool Processing::processPush(std::string const &param, std::list<IOperand const*> *const o) {
     const size_t _startBracket = param.find_first_of('(', 0) + 1;
     const size_t _endBracket = param.find_first_of(')', 0);
     const std::string _paramValue = param.substr(_startBracket, _endBracket - _startBracket);
@@ -93,7 +105,7 @@ bool AVMLaunchProcessing::processPush(std::string const &param, std::list<IOpera
     return true;
 }
 
-bool AVMLaunchProcessing::processAssert(std::string const &param, std::list<IOperand const*> *const o) {
+bool Processing::processAssert(std::string const &param, std::list<IOperand const*> *const o) {
     if (!o->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "command queue is empty now, can't process \'assert\';" << std::endl;
         return false;
@@ -127,7 +139,7 @@ bool AVMLaunchProcessing::processAssert(std::string const &param, std::list<IOpe
     return true;
 }
 
-bool AVMLaunchProcessing::processPrint(std::list<IOperand const*> *const o) {
+bool Processing::processPrint(std::list<IOperand const*> *const o) {
     if (!o->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "command queue is empty now, \'print\' can't display top value;" << std::endl;
@@ -138,9 +150,9 @@ bool AVMLaunchProcessing::processPrint(std::list<IOperand const*> *const o) {
     return true;
 }
 
-bool AVMLaunchProcessing::processExit(std::list<IOperand const*> *const o) { (void)o; return true; }
+bool Processing::processExit(std::list<IOperand const*> *const o) { (void)o; return true; }
 
-bool AVMLaunchProcessing::baseProcessAriphmetic(std::list<IOperand const *> *const o, std::string const command, char const op) {
+bool Processing::baseProcessAriphmetic(std::list<IOperand const *> *const o, std::string const command, char const op) {
     if (2 > o->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "can't process \'"
             << command << "\' because at the top of the stack less then 2 values;" << std::endl;
@@ -162,6 +174,7 @@ bool AVMLaunchProcessing::baseProcessAriphmetic(std::list<IOperand const *> *con
 
         if (result) {
             std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
+            delete leftOperand; delete rightOperand;
             o->pop_front(); o->pop_front();
             o->push_front(result);
         } else {
@@ -172,25 +185,26 @@ bool AVMLaunchProcessing::baseProcessAriphmetic(std::list<IOperand const *> *con
     return true;
 }
 
-bool AVMLaunchProcessing::processAdd(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "add", '+'); }
-bool AVMLaunchProcessing::processSub(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "sub", '-'); }
-bool AVMLaunchProcessing::processMul(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "mul", '*'); }
-bool AVMLaunchProcessing::processDiv(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "div", '/'); }
-bool AVMLaunchProcessing::processMod(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "mod", '%'); }
+bool Processing::processAdd(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "add", '+'); }
+bool Processing::processSub(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "sub", '-'); }
+bool Processing::processMul(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "mul", '*'); }
+bool Processing::processDiv(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "div", '/'); }
+bool Processing::processMod(std::list<IOperand const*> *const o) { return baseProcessAriphmetic(o, "mod", '%'); }
 
-bool AVMLaunchProcessing::processPop(std::list<IOperand const*> *const o) {
+bool Processing::processPop(std::list<IOperand const*> *const o) {
     if (!o->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "command queue is empty now, \'pop\' can't unstack value from top;" << std::endl;
         return false;
     } else {
         std::cout << "pop \'" CHERRY << (*(o->begin()))->toString() << WHITE "\' value from the top of the stack;" << std::endl;
+        delete *(o->begin());
         o->pop_front();
     }
     return true;
 }
 
-bool AVMLaunchProcessing::processDump(std::list<IOperand const*> *const o) {
+bool Processing::processDump(std::list<IOperand const*> *const o) {
     if (!o->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "command queue is empty now, \'dump\' can't print all stack values;" << std::endl;
