@@ -37,103 +37,53 @@ public:
 
     eOperandType getType(void) const { return this->_type; }
 
-    IOperand const *operator+(IOperand const &rhs) const {
+    IOperand const *baseOperators(IOperand const &lOperand, char const op) const {
+        bool isValid = true;
         IOperand const *out = NULL;
-        eOperandType _newType = (this->_type > rhs.getType()) ? this->_type : rhs.getType();
-        if (Float > _newType) {
-            int64_t _rhsValue = std::stol(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
-            int32_t _newValue = _rhsValue + this->_value;
-            out = gOFactory.createOperand(_newType, std::to_string(_newValue));
+
+        eOperandType newType = (this->_type > lOperand.getType()) ? this->_type : lOperand.getType();
+        std::string const &lOperandStrValue = lOperand.toString().substr(lOperand.toString().find_first_of('(', 0) + 1, lOperand.toString().length() - 2);
+
+        double lOperandValue = 0.0;
+        double newValue = 0.0;
+        if (Float > newType) {
+            lOperandValue = std::stol(lOperandStrValue);
         } else {
-            double _rhsValue = std::stod(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
-            double _newValue = _rhsValue + this->_value;
-            out = gOFactory.createOperand(_newType, std::to_string(_newValue));
+            lOperandValue = std::stod(lOperandStrValue);
+        }
+        switch (op) {
+            case '+': newValue = lOperandValue + this->_value; break;
+            case '-': newValue = lOperandValue - this->_value; break;
+            case '*': newValue = lOperandValue * this->_value; break;
+            case '/': {
+                if (!lOperandValue || !this->_value) {
+                    std::cout << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
+                    isValid = false;
+                } else { newValue = lOperandValue / this->_value; }
+                break;
+            }
+            case '%': {
+                if (!lOperandValue || !this->_value) {
+                    std::cout << ERR_REPORT_PREFIX "one of the operands is zero, malformed expression;" << std::endl;
+                    isValid = false;
+                } else if (Int32 < lOperand.getType() || Int32 > this->_type) {
+                    std::cout << ERR_REPORT_PREFIX "one of the operands is float-pointing value, malformed expression;" << std::endl;
+                } else { newValue = static_cast<int32_t>(lOperandValue) % static_cast<int32_t>(this->_value); }
+                break;
+            }
+            default: break;
+        }
+        if (isValid) {
+            out = gOFactory.createOperand(newType, std::to_string(Int32 < newType ? newValue : (static_cast<int32_t>(newValue))));
         }
         return out;
     }
 
-    IOperand const *operator-(IOperand const &rhs) const {
-        IOperand const *out = NULL;
-        eOperandType _newType = (this->_type > rhs.getType()) ? this->_type : rhs.getType();
-        if (Float > _newType) {
-            int64_t _rhsValue = std::stol(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
-            int32_t _newValue = _rhsValue - this->_value;
-            out = gOFactory.createOperand(_newType, std::to_string(_newValue));
-        } else {
-            double _rhsValue = std::stod(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
-            double _newValue = _rhsValue - this->_value;
-            out = gOFactory.createOperand(_newType, std::to_string(_newValue));
-        }
-        return out;
-    }
-
-    IOperand const *operator*(IOperand const &rhs) const {
-        IOperand const *out = NULL;
-        eOperandType _newType = (this->_type > rhs.getType()) ? this->_type : rhs.getType();
-        if (Float > _newType) {
-            int64_t _rhsValue = std::stol(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
-            if (!_rhsValue || !this->_value) {
-                std::cout << RED "error" WHITE << std::endl
-                    << ERR_REPORT_PREFIX "one of the operands is zero. can't multiply to zero;" << std::endl;
-            } else {
-                int32_t _newValue = _rhsValue * this->_value;
-                out = gOFactory.createOperand(_newType, std::to_string(_newValue));
-            }
-        } else {
-            double _rhsValue = std::stod(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
-            if (!_rhsValue || !this->_value) {
-                std::cout << RED "error" WHITE << std::endl
-                    << ERR_REPORT_PREFIX "one of the operands is zero. can't multiply to zero;" << std::endl;
-            } else {
-                double _newValue = _rhsValue * this->_value;
-                out = gOFactory.createOperand(_newType, std::to_string(_newValue));
-            }
-        }
-        return out;
-    }
-
-    IOperand const *operator/(IOperand const &rhs) const {
-        IOperand const *out = NULL;
-        eOperandType _newType = (this->_type > rhs.getType()) ? this->_type : rhs.getType();
-        if (Float > _newType) {
-            int64_t _rhsValue = std::stol(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
-            if (!_rhsValue || !this->_value) {
-                std::cout << RED "error" WHITE << std::endl
-                    << ERR_REPORT_PREFIX "one of the operands is zero. can't divide to zero;" << std::endl;
-            } else {
-                int32_t _newValue = _rhsValue / this->_value;
-                out = gOFactory.createOperand(_newType, std::to_string(_newValue));
-            }
-        } else {
-            double _rhsValue = std::stod(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
-            if (!_rhsValue || !this->_value) {
-                std::cout << RED "error" WHITE << std::endl
-                    << ERR_REPORT_PREFIX "one of the operands is zero. can't divide to zero;" << std::endl;
-            } else {
-                double _newValue = _rhsValue / this->_value;
-                out = gOFactory.createOperand(_newType, std::to_string(_newValue));
-            }
-        }
-        return out;
-    }
-
-    IOperand const *operator%(IOperand const &rhs) const {IOperand const *out = NULL;
-        eOperandType _newType = (this->_type > rhs.getType()) ? this->_type : rhs.getType();
-        if (Float > _newType) {
-            int32_t _rhsValue = std::stol(rhs.toString().substr(rhs.toString().find_first_of('(', 0) + 1, rhs.toString().length() - 2));
-            if (!_rhsValue || !this->_value) {
-                std::cout << RED "error" WHITE << std::endl
-                    << ERR_REPORT_PREFIX "one of the operands is zero. can't module to zero;" << std::endl;
-            } else {
-                int32_t _newValue = static_cast<int32_t>(_rhsValue) % static_cast<int32_t>(this->_value);
-                out = gOFactory.createOperand(_newType, std::to_string(_newValue));
-            }
-        } else {
-            std::cout << RED "error" WHITE << std::endl
-                << ERR_REPORT_PREFIX "at least one of the operands is double(or float), can't process module for floating point values;" << std::endl;
-        }
-        return out;
-    }
+    IOperand const *operator+(IOperand const &lOperand) const { return baseOperators(lOperand, '+'); }
+    IOperand const *operator-(IOperand const &lOperand) const { return baseOperators(lOperand, '-'); }
+    IOperand const *operator*(IOperand const &lOperand) const { return baseOperators(lOperand, '*'); }
+    IOperand const *operator/(IOperand const &lOperand) const { return baseOperators(lOperand, '/'); }
+    IOperand const *operator%(IOperand const &lOperand) const { return baseOperators(lOperand, '%'); }
 
     std::string const &toString(void) const { return this->_valueStr; }
 private:
