@@ -43,6 +43,7 @@ public:
 
     static size_t const &incrementGlobalErrorsCounter(void) { return ++Reader::globalErrorsCounter; }
     static size_t const &getGlobalErrorsCounter(void) { return Reader::globalErrorsCounter; }
+    static void refreshGlobalErrorsCounter(void) { Reader::globalErrorsCounter = 0; }
 
 private:
     void printHelpInfoForStandardInput(void) const;

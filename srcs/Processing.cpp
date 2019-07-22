@@ -15,6 +15,7 @@ Processing &Processing::operator=(const Processing &copy) {
 }
 
 bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
+    Reader::refreshGlobalErrorsCounter();
     std::cout << std::endl << "    AVM " UNDERLINE "start" WHITE " executing:" << std::endl << std::endl;
 
     bool isValid = true;
@@ -149,7 +150,7 @@ bool Processing::processPrint() {
             "any values currently pushed, \'print\' can't display top value;" << std::endl;
         return false;
     } else {
-        baseDisplayOperand(*(_operands.begin()), _operands.size());
+        baseDisplayOperand(*(_operands.begin()), 1);
     }
     return true;
 }
@@ -163,7 +164,7 @@ bool Processing::processDump() {
         size_t elementNumber = ~0ULL;
         std::list<IOperand const*>::const_iterator it = _operands.begin();
         while (_operands.end() != it) {
-            baseDisplayOperand(*it++, ++elementNumber);
+            baseDisplayOperand(*it++, ++elementNumber + 1);
         }
     }
     return true;
