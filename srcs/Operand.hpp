@@ -41,40 +41,55 @@ public:
         bool isValid = true;
         IOperand const *out = NULL;
 
-        eOperandType newType = (this->_type > lOperand.getType()) ? this->_type : lOperand.getType();
+        eOperandType newType = (this->_type >= lOperand.getType()) ? this->_type : lOperand.getType();
         std::string const &lOperandStrValue = lOperand.toString().substr(lOperand.toString().find_first_of('(', 0) + 1, lOperand.toString().length() - 2);
 
-        double lOperandValue = 0.0;
-        double newValue = 0.0;
         if (Float > newType) {
-            lOperandValue = std::stol(lOperandStrValue);
+            int64_t lOperandIntValue = std::stol(lOperandStrValue), newIntValue = 0;
+            switch (op) {
+                case '+': newIntValue = lOperandIntValue + this->_value; break;
+                case '-': newIntValue = lOperandIntValue - this->_value; break;
+                case '*': newIntValue = lOperandIntValue * this->_value; break;
+                case '/': {
+                    if (!lOperandIntValue || !this->_value) {
+                        std::cout << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
+                        isValid = false;
+                    } else { newIntValue = lOperandIntValue / this->_value; }
+                    break;
+                }
+                case '%': {
+                    if (!lOperandIntValue || !this->_value) {
+                        std::cout << ERR_REPORT_PREFIX "one of the operands is zero, malformed expression;" << std::endl;
+                    } else { newIntValue = lOperandIntValue / this->_value; }
+                    isValid = false; break;
+                }
+                default: break;
+            }
+            if (isValid) {
+                out = gOFactory.createOperand(newType, std::to_string(newIntValue));
+            }
         } else {
-            lOperandValue = std::stod(lOperandStrValue);
-        }
-        switch (op) {
-            case '+': newValue = lOperandValue + this->_value; break;
-            case '-': newValue = lOperandValue - this->_value; break;
-            case '*': newValue = lOperandValue * this->_value; break;
-            case '/': {
-                if (!lOperandValue || !this->_value) {
-                    std::cout << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
-                    isValid = false;
-                } else { newValue = lOperandValue / this->_value; }
-                break;
-            }
-            case '%': {
-                if (!lOperandValue || !this->_value) {
-                    std::cout << ERR_REPORT_PREFIX "one of the operands is zero, malformed expression;" << std::endl;
-                    isValid = false;
-                } else if (Int32 < lOperand.getType() || Int32 > this->_type) {
+            long double lOperandDoubleValue = std::stold(lOperandStrValue), newDoubleValue = 0.0L;
+            switch (op) {
+                case '+': newDoubleValue = lOperandDoubleValue + this->_value; break;
+                case '-': newDoubleValue = lOperandDoubleValue - this->_value; break;
+                case '*': newDoubleValue = lOperandDoubleValue * this->_value; break;
+                case '/': {
+                    if (!lOperandDoubleValue || !this->_value) {
+                        std::cout << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
+                        isValid = false;
+                    } else { newDoubleValue = lOperandDoubleValue / this->_value; }
+                    break;
+                }
+                case '%': {
                     std::cout << ERR_REPORT_PREFIX "one of the operands is float-pointing value, malformed expression;" << std::endl;
-                } else { newValue = static_cast<int32_t>(lOperandValue) % static_cast<int32_t>(this->_value); }
-                break;
+                    isValid = false; break;
+                }
+                default: break;
             }
-            default: break;
-        }
-        if (isValid) {
-            out = gOFactory.createOperand(newType, std::to_string(Int32 < newType ? newValue : (static_cast<int32_t>(newValue))));
+            if (isValid) {
+                out = gOFactory.createOperand(newType, std::to_string(newDoubleValue));
+            }
         }
         return out;
     }
