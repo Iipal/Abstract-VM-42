@@ -47,11 +47,12 @@ bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
         ++it;
     }
 
+    std::cout << std::endl;
     if (isValid && _exit) {
         if (commandsCounter != commandQueue->size()) {
             displayUnexecutedCommands(commandQueue, it, commandsCounter);
         } else {
-            std::cout << std::endl << UNDERLINE "successful" WHITE " executed AVM;" << std::endl;
+            std::cout << UNDERLINE "successful" WHITE " executed AVM;" << std::endl;
         }
     } else if (isValid && !_exit) {
         std::cout << WARN_PREFIX "executing was stopped without \'" CYAN "exit" WHITE "\';" << std::endl;

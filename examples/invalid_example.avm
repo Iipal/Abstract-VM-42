@@ -2,6 +2,7 @@
 ; example.avm -
 ; -------------
 
+push int8(123123123123123123123)
 push int32
 push int32()
 

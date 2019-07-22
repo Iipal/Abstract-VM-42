@@ -45,7 +45,7 @@ IOperand const *OperandFactory::createFloat(std::string const &value) const {
         _value.erase(_valueFloatingPointDot + 1);
         _value.append(_valueAfterDot);
     }
-    std::string _strValue = std::string("float(" + value + ")");
+    std::string _strValue = std::string("float(" + _value + ")");
     return new Operand<float>(Float, _strValue, std::stof(value));
 }
 IOperand const *OperandFactory::createDouble(std::string const &value) const {
@@ -57,6 +57,6 @@ IOperand const *OperandFactory::createDouble(std::string const &value) const {
         _value.erase(_valueFloatingPointDot + 1);
         _value.append(_valueAfterDot);
     }
-    std::string _strValue = std::string("double(" + value + ")");
+    std::string _strValue = std::string("double(" + _value + ")");
     return new Operand<double>(Double, _strValue, std::stod(value));
 }
