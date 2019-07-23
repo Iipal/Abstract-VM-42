@@ -22,10 +22,11 @@
 #define INVERT "\033[7m"
 #define UNDERLINE "\033[4m"
 
-#define ERR_N_PREFIX(errNum) "AVM " RED "error" WHITE << " [" UNDERLINE << std::setw(6) << errNum << WHITE "]: "
-#define ERR_REPORT_PREFIX "AVM " ORANGE "error-report" WHITE "⤵ : "
-#define REPORT_PREFIX "AVM " BLUE "report" WHITE "      ⤴ : "
-#define WARN_PREFIX "AVM " MAGENTA "warning" WHITE "     → : "
+#define AVM_PREFIX "    AVM "
+#define ERR_N_PREFIX(errNum) AVM_PREFIX RED "error" WHITE << " [" UNDERLINE << std::setw(6) << errNum << WHITE "]: "
+#define ERR_REPORT_PREFIX AVM_PREFIX ORANGE "error-report" WHITE "⤵ : "
+#define REPORT_PREFIX AVM_PREFIX BLUE "report" WHITE "      ⤴ : "
+#define WARN_PREFIX AVM_PREFIX MAGENTA "warning" WHITE "     → : "
 
 #define MAX_SPECIFIED_COMMANDS 3
 
@@ -39,7 +40,7 @@ public:
 
     std::vector<std::string> *readStandardInput(void) const;
     std::vector<std::string> *readPipeInput(void) const;
-    std::vector<std::string> *readFileInput(std::string const &fileName) const;
+    std::vector<std::string> *readFileInput(std::string const &fileName, std::vector<std::string> *commandQueue) const;
 
     static size_t const &incrementGlobalErrorsCounter(void) { return ++Reader::globalErrorsCounter; }
     static size_t const &getGlobalErrorsCounter(void) { return Reader::globalErrorsCounter; }

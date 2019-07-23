@@ -22,7 +22,7 @@ bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
         return _operands;
     } else { _isClear = false; }
 
-    std::cout << std::endl << "    AVM " UNDERLINE "start" WHITE " executing:" << std::endl << std::endl;
+    std::cout << std::endl << AVM_PREFIX UNDERLINE "start" WHITE " executing:" << std::endl << std::endl;
 
     bool isValid = true;
     bool _exit = false;
@@ -59,12 +59,12 @@ bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
         if (commandsCounter != commandQueue->size()) {
             displayUnexecutedCommands(commandQueue, it, commandsCounter);
         } else {
-            std::cout << UNDERLINE "successful" WHITE " executed AVM;" << std::endl;
+            std::cout << AVM_PREFIX UNDERLINE "successful" WHITE " executed;" << std::endl;
         }
     } else if (isValid && !_exit) {
         std::cout << WARN_PREFIX "executing was stopped without \'" CYAN "exit" WHITE "\';" << std::endl;
     } else {
-        std::cout << CYAN "AVM" WHITE " " MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
+        std::cout << AVM_PREFIX MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
             << std::setw(6) << Reader::getGlobalErrorsCounter()
             << WHITE "] error occured while AVM was executed, try to fix all error reports above for successful AVM work;" << std::endl;
     }

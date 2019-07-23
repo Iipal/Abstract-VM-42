@@ -39,7 +39,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
         free(_fepBuff);
     }
 
-    std::cout << "    AVM " ORANGE "standard" WHITE " input mode (" UNDERLINE "'h' for details" WHITE "):" << std::endl;
+    std::cout << AVM_PREFIX ORANGE "standard" WHITE " input mode (" UNDERLINE "'h' for details" WHITE "):" << std::endl;
 
     const std::string _specCommands[MAX_SPECIFIED_COMMANDS] = { "list", "clean", "delete" };
     const std::string _shortSpecCommands[MAX_SPECIFIED_COMMANDS] = { "l", "c", "d" };
@@ -93,7 +93,8 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
     }
 
     if (isValidInput && !outCommandsQueue->size()) {
-        std::cout << WARN_PREFIX "command queue is empty, can't execute AVM;" << std::endl;
+        std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+                "command queue is empty, can't execute AVM." << std::endl;
         isValidInput = false;
     }
     if (!isValidInput) {
@@ -112,7 +113,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
         return outCommandsQueue;
     }
 
-    std::cout << "    AVM " BLUE "pipe" WHITE " input mode:" << std::endl;
+    std::cout << AVM_PREFIX BLUE "pipe" WHITE " input mode:" << std::endl;
 
     std::string _tmp;
     bool isValid = true;
@@ -142,18 +143,16 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
         delete outCommandsQueue;
         outCommandsQueue = NULL;
     } else {
-        std::cout << " " UNDERLINE "successful" WHITE " read command queue from a pipe;" << std::endl;
+        std::cout << AVM_PREFIX BLUE "pipe" WHITE " " UNDERLINE "successful" WHITE " read;" << std::endl;
     }
     return outCommandsQueue;
 }
 
-std::vector<std::string> *Reader::readFileInput(std::string const &fileName) const {
+std::vector<std::string> *Reader::readFileInput(std::string const &fileName, std::vector<std::string> *commandQueue) const {
     Reader::refreshGlobalErrorsCounter();
 
-    std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
-    if (!outCommandsQueue) {
-        std::cout << ERR_REPORT_PREFIX "cannot allocate memory;" << std::endl;
-        return outCommandsQueue;
+    if (!commandQueue) {
+        commandQueue = new std::vector<std::string>();
     }
 
     bool isValid = true;
@@ -167,7 +166,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
                 baseStringPrepareAfterReading(_tmp);
                 if (_tmp.length()) {
                     if (validatingReadedCommand(_tmp)) {
-                        outCommandsQueue->push_back(_tmp);
+                        commandQueue->push_back(_tmp);
                     } else {
                         std::cout << REPORT_PREFIX "error on line: [" UNDERLINE
                             << std::setw(5) << readedLines << WHITE "];" << std::endl;
@@ -176,8 +175,10 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
                 }
             }
         }
-        if (isValid && !outCommandsQueue->size()) {
-            std::cout << std::endl << ERR_REPORT_PREFIX "command queue is empty, can't execute AVM." << std::endl;
+
+        if (isValid && !commandQueue->size()) {
+            std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
+                "command queue is empty, can't execute AVM." << std::endl;
             isValid = false;
         }
     } else {
@@ -186,16 +187,16 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
     }
 
     if (false == isValid) {
-        std::cout << std::endl << CYAN "AVM" WHITE " " MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
+        std::cout << std::endl << AVM_PREFIX MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
             << std::setw(6) << Reader::getGlobalErrorsCounter()
             << WHITE "] error occured before AVM was executed,"
             " try to fix all error reports above for successful AVM work;" << std::endl;
-        delete outCommandsQueue;
-        outCommandsQueue = NULL;
+        delete commandQueue;
+        commandQueue = NULL;
     } else {
-        std::cout << UNDERLINE "successful" WHITE " read command queue from a file \'" << fileName << "\';" << std::endl;
+        std::cout << AVM_PREFIX CYAN "file" WHITE " \'" << fileName << "\' " UNDERLINE "successful" WHITE " read;" << std::endl;
     }
-    return outCommandsQueue;
+    return commandQueue;
 }
 
 /* private methods */
@@ -249,7 +250,7 @@ bool Reader::specClean(std::vector<std::string> *const commandQueue) const {
 
     size_t i = commandQueue->size();
     while (i--) {
-        std::cout << RED "deleted" WHITE ": " << (*commandQueue)[i] << std::endl;
+        std::cout << "    " RED "deleted" WHITE " : " << (*commandQueue)[i] << std::endl;
         commandQueue->pop_back();
     }
 
@@ -260,7 +261,7 @@ bool Reader::specDelete(std::vector<std::string> *const commandQueue) const {
     if (!commandQueue->size()) {
         std::cout << WARN_PREFIX "can't delete last command from queue, it's empty;" << std::endl;
     } else {
-        std::cout << RED "deleted" WHITE ": " << (*commandQueue)[commandQueue->size() - 1] << std::endl;
+        std::cout << "    " RED "deleted" WHITE " : " << (*commandQueue)[commandQueue->size() - 1] << std::endl;
         commandQueue->pop_back();
     }
 
