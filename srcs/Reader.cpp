@@ -213,6 +213,7 @@ void Reader::printHelpInfoForStandardInput(void) const {
         << "| " INVERT "mul      " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, multiplies them, then stacks the result;" << '|' << std::endl
         << "| " INVERT "div      " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, divides them, then stacks the result;" << '|' << std::endl
         << "| " INVERT "mod      " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Unstacks the first two values on the stack, calculates the modulus, then stacks the result;" << '|' << std::endl
+        << "| " INVERT ";        " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": All comments start with ';';" << '|' << std::endl
         << "| " INVERT "         " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Empty lines will be ignored;" << '|' << std::endl
         << "Specified, for standard input mode, commands:" << std::endl
         << "| " INVERT ";;       " WHITE " | " << std::setw(14) << ' '             << std::setw(95) << ": Stops waiting for any input and execute AVM;" << '|' << std::endl
