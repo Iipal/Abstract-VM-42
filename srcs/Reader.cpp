@@ -125,7 +125,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
             std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "error occured in pipe input;" << std::endl;
             _exit = true;
             isValid = false;
-        } else if (_tmp.length()) {
+        } else {
             baseStringPrepareAfterReading(_tmp);
             if (_tmp.length()) {
                 if (validatingReadedCommand(_tmp)) {
@@ -150,10 +150,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
 
 std::vector<std::string> *Reader::readFileInput(std::string const &fileName, std::vector<std::string> *commandQueue) const {
     Reader::refreshGlobalErrorsCounter();
-
-    if (!commandQueue) {
-        commandQueue = new std::vector<std::string>();
-    }
+    std::vector<std::string> *tempQueue = new std::vector<std::string>();
 
     bool isValid = true;
     std::fstream _file(fileName);
@@ -162,21 +159,19 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName, std
         std::string _tmp;
         while (std::getline(_file, _tmp)) {
             ++readedLines;
+            baseStringPrepareAfterReading(_tmp);
             if (_tmp.length()) {
-                baseStringPrepareAfterReading(_tmp);
-                if (_tmp.length()) {
-                    if (validatingReadedCommand(_tmp)) {
-                        commandQueue->push_back(_tmp);
-                    } else {
-                        std::cout << REPORT_PREFIX "error on line: [" UNDERLINE
-                            << std::setw(5) << readedLines << WHITE "];" << std::endl;
-                        isValid = false;
-                    }
+                if (validatingReadedCommand(_tmp)) {
+                    tempQueue->push_back(_tmp);
+                } else {
+                    std::cout << REPORT_PREFIX "error on line: [" UNDERLINE
+                        << std::setw(5) << readedLines << WHITE "];" << std::endl;
+                    isValid = false;
                 }
             }
         }
 
-        if (isValid && !commandQueue->size()) {
+        if (isValid && !tempQueue->size()) {
             std::cout << std::endl << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
                 "command queue is empty, can't execute AVM." << std::endl;
             isValid = false;
@@ -191,11 +186,21 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName, std
             << std::setw(6) << Reader::getGlobalErrorsCounter()
             << WHITE "] error occured before AVM was executed,"
             " try to fix all error reports above for successful AVM work;" << std::endl;
-        delete commandQueue;
-        commandQueue = NULL;
+        delete tempQueue; tempQueue = NULL;
     } else {
         std::cout << AVM_PREFIX CYAN "file" WHITE " \'" << fileName << "\' " UNDERLINE "successful" WHITE " read;" << std::endl;
     }
+
+    if (tempQueue) {
+        if (!commandQueue) {
+            commandQueue = new std::vector<std::string>();
+        }
+        for (std::vector<std::string>::iterator it = tempQueue->begin(); tempQueue->end() != it; it++) {
+            commandQueue->push_back(std::string(*it));
+        }
+        delete tempQueue; tempQueue = NULL;
+    }
+
     return commandQueue;
 }
 
@@ -225,11 +230,13 @@ void Reader::printHelpInfoForStandardInput(void) const {
 }
 
 void Reader::baseStringPrepareAfterReading(std::string &command) const {
-    const size_t isCommentaryExistAfterCommand = command.find_first_of(';', 0);
-    if (isCommentaryExistAfterCommand < command.length()) {
-        command = command.substr(0, isCommentaryExistAfterCommand);
+    if (command.length()) {
+        const size_t isCommentaryExistAfterCommand = command.find_first_of(';', 0);
+        if (isCommentaryExistAfterCommand < command.length()) {
+            command = command.substr(0, isCommentaryExistAfterCommand);
+        }
+        command.erase(std::find_if(command.rbegin(), command.rend(), [](int ch) { return !std::isspace(ch); }).base(), command.end());
     }
-    command.erase(std::find_if(command.rbegin(), command.rend(), [](int ch) { return !std::isspace(ch); }).base(), command.end());
 }
 
 bool Reader::specList(std::vector<std::string> *const commandQueue) const {

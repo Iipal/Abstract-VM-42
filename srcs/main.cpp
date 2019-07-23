@@ -45,11 +45,8 @@ void mainMultiFilesInput(int argc, char *argv[]) {
             std::cout << AVM_PREFIX ORANGE "multi file stack" WHITE " mode is activated:" << std::endl << std::endl;
             isMultiFileStack = true; --argc; ++argv;
         }
+
         if (!isValid) { return ; }
-    }
-    if (!argc) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "missed files in arguments;" << std::endl;
-        return ;
     }
 
     for (int i = -1; argc > ++i;) {
@@ -57,10 +54,7 @@ void mainMultiFilesInput(int argc, char *argv[]) {
             << std::setw(3) << i + 1 << WHITE "]: " << argv[i] << " ):" << std::endl;
 
         commandQueue = r.readFileInput(argv[i], commandQueue);
-        if (!commandQueue && isMultiFileStack) {
-            std::cout << WARN_PREFIX "in " ORANGE "multi file stack" WHITE " mode was detected invalid file,"
-                UNDERLINE " command queue before this file will be ignored" WHITE ";" << std::endl;
-        } else if (commandQueue) {
+        if (commandQueue) {
             if (!isMultiFileStack) {
                 p.startProcessing(commandQueue);
                 delete commandQueue;
