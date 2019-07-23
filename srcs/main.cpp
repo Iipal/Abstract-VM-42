@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
             delete commandQueue;
         }
     } else {
-        mainMultiFilesInput(argc, argv);
+        mainMultiFileStackInput(argc, argv);
     }
 }
 

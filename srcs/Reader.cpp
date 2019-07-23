@@ -420,18 +420,19 @@ bool Reader::validatingCommandParam(std::string &commandParam) const {
 bool baseIntValidatingCommandParamValueInRange(std::string const &paramValue, int32_t &_trueValue, eOperandType const &type) {
     bool out = true;
     try {
-        _trueValue = std::stoi(paramValue);
+        _trueValue = std::stol(paramValue);
     } catch (std::exception &e) {
         std::cout << ERR_REPORT_PREFIX << "invalid value for reading with \'std::" << e.what()
-            << "\', max: " UNDERLINE << INT32_MAX << WHITE ", min: " UNDERLINE << INT32_MIN
-            << WHITE;
-            switch (type) {
-                case Int8: std::cout << ", but with overflow to current type int8_t(" UNDERLINE
-                    << INT8_MAX << WHITE " - " UNDERLINE << INT8_MIN << WHITE ");" << std::endl; break;
-                case Int16: std::cout << ", but with overflow to current type int16_t(" UNDERLINE
-                    << INT16_MAX << WHITE " - " UNDERLINE << INT16_MIN << WHITE ");" << std::endl; break;
-                default: std::cout << ';' << std::endl; break;
-            }
+            << "\', max: " UNDERLINE << INT64_MAX << WHITE ", min: " UNDERLINE << INT64_MIN << WHITE;
+        switch (type) {
+            case Int8: std::cout << ", but with overflow to current type int8_t(" UNDERLINE
+                << INT8_MAX << WHITE " - " UNDERLINE << INT8_MIN << WHITE ");" << std::endl; break;
+            case Int16: std::cout << ", but with overflow to current type int16_t(" UNDERLINE
+                << INT16_MAX << WHITE " - " UNDERLINE << INT16_MIN << WHITE ");" << std::endl; break;
+            case Int32: std::cout << ", but with overflow to current type int32_t(" UNDERLINE
+                << INT32_MAX << WHITE " - " UNDERLINE << INT32_MIN << WHITE ");" << std::endl; break;
+            default: std::cout << ';' << std::endl; break;
+        }
         out = false;
     }
     return out;
