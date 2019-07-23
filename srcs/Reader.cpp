@@ -187,7 +187,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName, std
     }
 
     if (false == isValid) {
-        std::cout << std::endl << AVM_PREFIX MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
+        std::cout << std::endl << WARN_PREFIX "at least [" RED UNDERLINE
             << std::setw(6) << Reader::getGlobalErrorsCounter()
             << WHITE "] error occured before AVM was executed,"
             " try to fix all error reports above for successful AVM work;" << std::endl;

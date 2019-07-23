@@ -64,7 +64,7 @@ bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
     } else if (isValid && !_exit) {
         std::cout << WARN_PREFIX "executing was stopped without \'" CYAN "exit" WHITE "\';" << std::endl;
     } else {
-        std::cout << AVM_PREFIX MAGENTA "work-report" WHITE "   : at least [" RED UNDERLINE
+        std::cout << WARN_PREFIX "at least [" RED UNDERLINE
             << std::setw(6) << Reader::getGlobalErrorsCounter()
             << WHITE "] error occured while AVM was executed, try to fix all error reports above for successful AVM work;" << std::endl;
     }

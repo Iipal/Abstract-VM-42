@@ -42,7 +42,7 @@ void mainMultiFilesInput(int argc, char *argv[]) {
             std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
                 ORANGE "multi file stack" WHITE " flag detected without any file;" << std::endl; isValid = false;
         } else {
-            std::cout << "    AVM " ORANGE "multi file stack" WHITE " mode is activated:" << std::endl << std::endl;
+            std::cout << AVM_PREFIX ORANGE "multi file stack" WHITE " mode is activated:" << std::endl << std::endl;
             isMultiFileStack = true; --argc; ++argv;
         }
         if (!isValid) { return ; }
@@ -53,24 +53,28 @@ void mainMultiFilesInput(int argc, char *argv[]) {
     }
 
     for (int i = -1; argc > ++i;) {
-        std::cout << "    AVM " CYAN "file" WHITE " input mode( [" UNDERLINE
+        std::cout << AVM_PREFIX CYAN "file" WHITE " input mode( [" UNDERLINE
             << std::setw(3) << i + 1 << WHITE "]: " << argv[i] << " ):" << std::endl;
 
         commandQueue = r.readFileInput(argv[i], commandQueue);
-        if (commandQueue && !isMultiFileStack) {
-            p.startProcessing(commandQueue);
-            delete commandQueue;
-            commandQueue = NULL;
-        }
-        if (isMultiFileStack && argc != i + 1) {
-            if ((*commandQueue)[commandQueue->size() - 1] == "exit") {
-                commandQueue->pop_back();
+        if (!commandQueue && isMultiFileStack) {
+            std::cout << WARN_PREFIX "in " ORANGE "multi file stack" WHITE " mode was detected invalid file,"
+                UNDERLINE " command queue before this file will be ignored" WHITE ";" << std::endl;
+        } else if (commandQueue) {
+            if (!isMultiFileStack) {
+                p.startProcessing(commandQueue);
+                delete commandQueue;
+                commandQueue = NULL;
+            }
+
+            if (isMultiFileStack && argc != i + 1) {
+                if ((*commandQueue)[commandQueue->size() - 1] == "exit") {
+                    commandQueue->pop_back();
+                }
             }
         }
 
-        if (argc != i + 1) {
-            std::cout << std::endl;
-        }
+        if (argc != i + 1) { std::cout << std::endl; }
     }
 
     if (commandQueue && isMultiFileStack) {
