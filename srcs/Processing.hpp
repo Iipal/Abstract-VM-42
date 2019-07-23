@@ -13,9 +13,10 @@ public:
 
     bool startProcessing(std::vector<std::string> *commandQueue);
 private:
-    std::list<IOperand const *> _operands;
-
-    bool isEmptyOperandsList(std::string const command) const;
+    std::list<IOperand const *> *_operands;
+    bool _isClear;
+    bool const &isClear() const;
+    void clear();
 
     bool processPush(std::string const &param);
     bool processAssert(std::string const &param);

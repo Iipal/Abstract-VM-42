@@ -2,20 +2,26 @@
 
 Processing::Processing() { }
 Processing::Processing(const Processing &copy) { *this = copy; }
-Processing::~Processing() {
-    std::list<IOperand const*>::iterator it = _operands.begin();
-    while (_operands.end() != it) {
-        delete *it++;
-    }
-}
+Processing::~Processing() { if (!isClear()) { clear(); } }
 
 Processing &Processing::operator=(const Processing &copy) {
-    if (this != &copy) { *this = copy; }
+    if (this != &copy) {
+        this->_operands = NULL;
+        this->_isClear = true;
+    }
     return *this;
 }
 
 bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
     Reader::refreshGlobalErrorsCounter();
+
+    _operands = new std::list<IOperand const*>();
+    if (!_operands) {
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "can't allocate memory;" << std::endl;
+        _isClear = true;
+        return _operands;
+    } else { _isClear = false; }
+
     std::cout << std::endl << "    AVM " UNDERLINE "start" WHITE " executing:" << std::endl << std::endl;
 
     bool isValid = true;
@@ -62,10 +68,25 @@ bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
             << std::setw(6) << Reader::getGlobalErrorsCounter()
             << WHITE "] error occured while AVM was executed, try to fix all error reports above for successful AVM work;" << std::endl;
     }
+    clear();
     return isValid;
 }
 
 /* private methods */
+
+bool const &Processing::isClear() const { return this->_isClear; }
+
+void Processing::clear() {
+    if (_operands) {
+        std::list<IOperand const*>::iterator it = _operands->begin();
+        while (_operands->end() != it) {
+            delete *it;
+            ++it;
+        }
+        delete _operands; _operands = NULL;
+        _isClear = true;
+    }
+}
 
 bool Processing::processPush(std::string const &param) {
     const size_t _startBracket = param.find_first_of('(', 0) + 1;
@@ -82,13 +103,13 @@ bool Processing::processPush(std::string const &param) {
         }
     }
 
-    _operands.push_front(gOFactory.createOperand(_oType, _paramValue));
+    _operands->push_front(gOFactory.createOperand(_oType, _paramValue));
     std::cout << " push \'" BLUE << _paramType << "(" << _paramValue << ")" WHITE "\';" << std::endl;
     return true;
 }
 
 bool Processing::processAssert(std::string const &param) {
-    if (!_operands.size()) {
+    if (!_operands->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "any values currently pushed, can't process \'assert\';" << std::endl;
         return false;
     }
@@ -107,7 +128,7 @@ bool Processing::processAssert(std::string const &param) {
         }
     }
 
-    std::list<IOperand const*>::const_iterator it = _operands.begin();
+    std::list<IOperand const*>::const_iterator it = _operands->begin();
     std::string _itParamValue = (*it)->toString();
     _itParamValue = _itParamValue.substr(_itParamValue.find_first_of('(', 0) + 1,
         _itParamValue.find_first_of(')', 0) - (_itParamValue.find_first_of('(', 0) + 1));
@@ -124,14 +145,14 @@ bool Processing::processAssert(std::string const &param) {
 bool Processing::processExit() { return true; }
 
 bool Processing::processPop() {
-    if (!_operands.size()) {
+    if (!_operands->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "any values currently pushed, \'pop\' can't unstack value from top;" << std::endl;
         return false;
     } else {
-        std::cout << " pop \'" RED << (*(_operands.begin()))->toString() << WHITE "\';" << std::endl;
-        delete *(_operands.begin());
-        _operands.pop_front();
+        std::cout << " pop \'" RED << (*(_operands->begin()))->toString() << WHITE "\';" << std::endl;
+        delete *(_operands->begin());
+        _operands->pop_front();
     }
     return true;
 }
@@ -145,25 +166,25 @@ void Processing::baseDisplayOperand(IOperand const *it, size_t i) {
 }
 
 bool Processing::processPrint() {
-    if (!_operands.size()) {
+    if (!_operands->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "any values currently pushed, \'print\' can't display top value;" << std::endl;
         return false;
     } else {
-        baseDisplayOperand(*(_operands.begin()), 1);
+        baseDisplayOperand(*(_operands->begin()), 1);
     }
     return true;
 }
 
 bool Processing::processDump() {
-    if (!_operands.size()) {
+    if (!_operands->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "any values currently pushed, \'dump\' can't print all stack values;" << std::endl;
         return false;
     } else {
         size_t elementNumber = ~0ULL;
-        std::list<IOperand const*>::const_iterator it = _operands.begin();
-        while (_operands.end() != it) {
+        std::list<IOperand const*>::const_iterator it = _operands->begin();
+        while (_operands->end() != it) {
             baseDisplayOperand(*it++, ++elementNumber + 1);
         }
     }
@@ -171,13 +192,13 @@ bool Processing::processDump() {
 }
 
 bool Processing::baseProcessAriphmetic(std::string const command, char const op) {
-    if (2 > _operands.size()) {
+    if (2 > _operands->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "can't process \'"
             << command << "\' because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
-        IOperand const *leftOperand = *(_operands.begin());
-        IOperand const *rightOperand = *(++_operands.begin());
+        IOperand const *leftOperand = *(_operands->begin());
+        IOperand const *rightOperand = *(++_operands->begin());
         IOperand const *result = NULL;
 
         std::cout << "\'" << (*leftOperand).toString() << "\' " BLUE << op << WHITE " \'" << (*rightOperand).toString() << "\' = ";
@@ -193,8 +214,8 @@ bool Processing::baseProcessAriphmetic(std::string const command, char const op)
         if (result) {
             std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
             delete leftOperand; delete rightOperand;
-            _operands.pop_front(); _operands.pop_front();
-            _operands.push_front(result);
+            _operands->pop_front(); _operands->pop_front();
+            _operands->push_front(result);
         } else {
             std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'" << command << "\';" << std::endl;
             return false;

@@ -27,12 +27,15 @@ IOperand const *OperandFactory::createOperand(eOperandType type, std::string con
 IOperand const *OperandFactory::createInt8(std::string const &value) const {
     return new Operand<int8_t>(Int8, std::string("int8(" + value + ")"), static_cast<int8_t>(std::stoi(value)));
 }
+
 IOperand const *OperandFactory::createInt16(std::string const &value) const {
     return new Operand<int16_t>(Int16, std::string("int16(" + value + ")"), static_cast<int16_t>(std::stoi(value)));
 }
+
 IOperand const *OperandFactory::createInt32(std::string const &value) const {
     return new Operand<int32_t>(Int32, std::string("int32(" + value + ")"), std::stoi(value));
 }
+
 IOperand const *OperandFactory::createFloat(std::string const &value) const {
     std::string _value = value;
     const size_t _valueFloatingPointDot = _value.find_first_of('.', 0);
@@ -44,6 +47,7 @@ IOperand const *OperandFactory::createFloat(std::string const &value) const {
     }
     return new Operand<float>(Float, std::string("float(" + _value + ")"), std::stof(value));
 }
+
 IOperand const *OperandFactory::createDouble(std::string const &value) const {
     std::string _value = value;
     const size_t _valueFloatingPointDot = _value.find_first_of('.', 0);

@@ -6,6 +6,7 @@ int main(int argc, char *argv[]) {
     --argc; ++argv;
 
     Reader r;
+    Processing p;
     std::vector<std::string> *commandQueue = NULL;
 
     if (!argc) {
@@ -14,18 +15,25 @@ int main(int argc, char *argv[]) {
         } else {
             commandQueue = r.readPipeInput();
         }
-    } else if (1 == argc) {
-        commandQueue = r.readFileInput(*argv);
     } else {
-        std::cout << "Usage:" << std::endl
-            << " " CYAN "file" WHITE " input:     $> ./avm <file-name>.avm" << std::endl
-            << " " BLUE "pipe" WHITE " input:     $> cat <file-name>.avm | ./avm" << std::endl
-            << " " ORANGE "standard" WHITE " input: $> ./avm" << std::endl;
+        for (int i = -1; argc > ++i;) {
+            std::cout << "    AVM " CYAN "file" WHITE " input mode( [" UNDERLINE
+                << std::setw(3) << i + 1 << WHITE "]: " << argv[i] << " ):" << std::endl;
+
+            commandQueue = r.readFileInput(argv[i]);
+            if (commandQueue) {
+                p.startProcessing(commandQueue);
+                delete commandQueue; commandQueue = NULL;
+            }
+
+            if (i + 1 != argc) {
+                std::cout << std::endl;
+            }
+        }
     }
 
     if (commandQueue) {
-        Processing p;
         p.startProcessing(commandQueue);
-        delete commandQueue;
+        delete commandQueue; commandQueue = NULL;
     }
 }

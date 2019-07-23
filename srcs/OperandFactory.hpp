@@ -11,8 +11,8 @@ public:
     IOperand const *createOperand(eOperandType type, std::string const &value) const;
 
     OperandFactory &operator=(OperandFactory const &copy);
-private:
 
+private:
     typedef IOperand const* (OperandFactory::*fnptrCreateOperand)(std::string const &) const;
     static const fnptrCreateOperand fnptrCreateOperands[MaxOperandTypes];
 

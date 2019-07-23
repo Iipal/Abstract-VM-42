@@ -14,6 +14,8 @@ Reader &Reader::operator=(Reader const &copy) {
 }
 
 std::vector<std::string> *Reader::readStandardInput(void) const {
+    Reader::refreshGlobalErrorsCounter();
+
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
     if (!outCommandsQueue) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "cannot allocate memory;" << std::endl;
@@ -102,6 +104,8 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 }
 
 std::vector<std::string> *Reader::readPipeInput(void) const {
+    Reader::refreshGlobalErrorsCounter();
+
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
     if (!outCommandsQueue) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "cannot allocate memory;" << std::endl;
@@ -144,13 +148,13 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
 }
 
 std::vector<std::string> *Reader::readFileInput(std::string const &fileName) const {
+    Reader::refreshGlobalErrorsCounter();
+
     std::vector<std::string> *outCommandsQueue = new std::vector<std::string>();
     if (!outCommandsQueue) {
         std::cout << ERR_REPORT_PREFIX "cannot allocate memory;" << std::endl;
         return outCommandsQueue;
     }
-
-    std::cout << "    AVM " CYAN "file" WHITE " input mode:" << std::endl;
 
     bool isValid = true;
     std::fstream _file(fileName);
