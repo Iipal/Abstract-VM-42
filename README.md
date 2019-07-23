@@ -51,6 +51,7 @@ $> ./avm
 | mul       |               | Unstacks the first two values on the stack, multiplies them, then stacks the result         |
 | div       |               | Unstacks the first two values on the stack, divides them, then stacks the result            |
 | mod       |               | Unstacks the first two values on the stack, calculates the modulus, then stacks the result  |
+| ;         |               | All comments start with ';'                                                                 |
 |           |               | Empty lines will be ignored                                                                 |
 
 > Specified, for standard input mode, commands:
