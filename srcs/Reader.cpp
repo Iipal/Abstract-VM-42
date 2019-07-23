@@ -169,8 +169,8 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
                     if (validatingReadedCommand(_tmp)) {
                         outCommandsQueue->push_back(_tmp);
                     } else {
-                        std::cout << REPORT_PREFIX "error on line: [ " UNDERLINE
-                            << std::setw(5) << readedLines << WHITE " ];" << std::endl;
+                        std::cout << REPORT_PREFIX "error on line: [" UNDERLINE
+                            << std::setw(5) << readedLines << WHITE "];" << std::endl;
                         isValid = false;
                     }
                 }
