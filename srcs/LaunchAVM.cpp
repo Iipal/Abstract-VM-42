@@ -1,10 +1,10 @@
-#include "Processing.hpp"
+#include "LaunchAVM.hpp"
 
-Processing::Processing() { }
-Processing::Processing(const Processing &copy) { *this = copy; }
-Processing::~Processing() { if (!isClear()) { clear(); } }
+LaunchAVM::LaunchAVM() { }
+LaunchAVM::LaunchAVM(const LaunchAVM &copy) { *this = copy; }
+LaunchAVM::~LaunchAVM() { if (!isClear()) { clear(); } }
 
-Processing &Processing::operator=(const Processing &copy) {
+LaunchAVM &LaunchAVM::operator=(const LaunchAVM &copy) {
     if (this != &copy) {
         this->_operands = NULL;
         this->_isClear = true;
@@ -12,7 +12,7 @@ Processing &Processing::operator=(const Processing &copy) {
     return *this;
 }
 
-bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
+bool LaunchAVM::launchAVM(std::vector<std::string> *commandQueue) {
     Reader::refreshGlobalErrorsCounter();
 
     _operands = new std::list<IOperand const*>();
@@ -74,9 +74,9 @@ bool Processing::startProcessing(std::vector<std::string> *commandQueue) {
 
 /* private methods */
 
-bool const &Processing::isClear() const { return this->_isClear; }
+bool const &LaunchAVM::isClear() const { return this->_isClear; }
 
-void Processing::clear() {
+void LaunchAVM::clear() {
     if (_operands) {
         std::list<IOperand const*>::iterator it = _operands->begin();
         while (_operands->end() != it) {
@@ -88,7 +88,7 @@ void Processing::clear() {
     }
 }
 
-bool Processing::processPush(std::string const &param) {
+bool LaunchAVM::parsePush(std::string const &param) {
     const size_t _startBracket = param.find_first_of('(', 0) + 1;
     const size_t _endBracket = param.find_first_of(')', 0);
     const std::string _paramValue = param.substr(_startBracket, _endBracket - _startBracket);
@@ -108,9 +108,9 @@ bool Processing::processPush(std::string const &param) {
     return true;
 }
 
-bool Processing::processAssert(std::string const &param) {
+bool LaunchAVM::parseAssert(std::string const &param) {
     if (!_operands->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "any values currently pushed, can't process \'assert\';" << std::endl;
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "any values currently pushed, can't parse \'assert\';" << std::endl;
         return false;
     }
 
@@ -142,9 +142,9 @@ bool Processing::processAssert(std::string const &param) {
     return true;
 }
 
-bool Processing::processExit() { return true; }
+bool LaunchAVM::parseExit() { return true; }
 
-bool Processing::processPop() {
+bool LaunchAVM::parsePop() {
     if (!_operands->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "any values currently pushed, \'pop\' can't unstack value from top;" << std::endl;
@@ -157,7 +157,7 @@ bool Processing::processPop() {
     return true;
 }
 
-void Processing::baseDisplayOperand(IOperand const *it, size_t i) {
+void LaunchAVM::baseDisplay(IOperand const *it, size_t i) {
     std::cout << std::setiosflags(std::ios::right) << "[" UNDERLINE << std::setw(6) << i << WHITE "]: " << it->toString();
     if (Int32 < it->getType()) {
         std::cout << ", precision = " << it->getPrecision();
@@ -165,18 +165,18 @@ void Processing::baseDisplayOperand(IOperand const *it, size_t i) {
     std::cout << ';' << std::endl;
 }
 
-bool Processing::processPrint() {
+bool LaunchAVM::parsePrint() {
     if (!_operands->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "any values currently pushed, \'print\' can't display top value;" << std::endl;
         return false;
     } else {
-        baseDisplayOperand(*(_operands->begin()), 1);
+        baseDisplay(*(_operands->begin()), 1);
     }
     return true;
 }
 
-bool Processing::processDump() {
+bool LaunchAVM::parseDump() {
     if (!_operands->size()) {
         std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
             "any values currently pushed, \'dump\' can't print all stack values;" << std::endl;
@@ -185,15 +185,15 @@ bool Processing::processDump() {
         size_t elementNumber = ~0ULL;
         std::list<IOperand const*>::const_iterator it = _operands->begin();
         while (_operands->end() != it) {
-            baseDisplayOperand(*it++, ++elementNumber + 1);
+            baseDisplay(*it++, ++elementNumber + 1);
         }
     }
     return true;
 }
 
-bool Processing::baseProcessAriphmetic(std::string const command, char const op) {
+bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
     if (2 > _operands->size()) {
-        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "can't process \'"
+        std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "can't parse \'"
             << command << "\' because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
@@ -217,20 +217,20 @@ bool Processing::baseProcessAriphmetic(std::string const command, char const op)
             _operands->pop_front(); _operands->pop_front();
             _operands->push_front(result);
         } else {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when processing \'" << command << "\';" << std::endl;
+            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter()) "something went wrong when parsing \'" << command << "\';" << std::endl;
             return false;
         }
     }
     return true;
 }
 
-bool Processing::processAdd() { return baseProcessAriphmetic("add", '+'); }
-bool Processing::processSub() { return baseProcessAriphmetic("sub", '-'); }
-bool Processing::processMul() { return baseProcessAriphmetic("mul", '*'); }
-bool Processing::processDiv() { return baseProcessAriphmetic("div", '/'); }
-bool Processing::processMod() { return baseProcessAriphmetic("mod", '%'); }
+bool LaunchAVM::parseAdd() { return baseAriphmetic("add", '+'); }
+bool LaunchAVM::parseSub() { return baseAriphmetic("sub", '-'); }
+bool LaunchAVM::parseMul() { return baseAriphmetic("mul", '*'); }
+bool LaunchAVM::parseDiv() { return baseAriphmetic("div", '/'); }
+bool LaunchAVM::parseMod() { return baseAriphmetic("mod", '%'); }
 
-void Processing::displayUnexecutedCommands(std::vector<std::string> *commandQueue, std::vector<std::string>::iterator &it, size_t const &commandsCounter) {
+void LaunchAVM::displayUnexecutedCommands(std::vector<std::string> *commandQueue, std::vector<std::string>::iterator &it, size_t const &commandsCounter) {
     std::cout << WARN_PREFIX "at least [" UNDERLINE << std::setw(6) << (std::distance(commandQueue->begin(),
         std::find_if(it, commandQueue->end(), [](std::string const &str){ return str == "exit"; })) - commandsCounter)
         << WHITE "] commands was un-executed after \'exit\':" << std::endl;

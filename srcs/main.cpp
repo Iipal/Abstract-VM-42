@@ -1,8 +1,8 @@
 #include "Reader.hpp"
 #include "OperandFactory.hpp"
-#include "Processing.hpp"
+#include "LaunchAVM.hpp"
 
-void mainMultiFilesInput(int argc, char *argv[]);
+void mainMultiFileStackInput(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
     --argc; ++argv;
@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
             commandQueue = r.readPipeInput();
         }
         if (commandQueue) {
-            Processing p;
-            p.startProcessing(commandQueue);
+            LaunchAVM l;
+            l.launchAVM(commandQueue);
             delete commandQueue;
         }
     } else {
@@ -26,27 +26,26 @@ int main(int argc, char *argv[]) {
     }
 }
 
-void mainMultiFilesInput(int argc, char *argv[]) {
+void mainMultiFileStackInput(int argc, char *argv[]) {
     Reader r;
-    Processing p;
+    LaunchAVM l;
     std::vector<std::string> *commandQueue = NULL;
 
     bool isMultiFileStack = false;
 
     if (std::string(*argv) == "-mfs") {
-        bool isValid = true;
-        if (1 == argc - 1) {
+        --argc; ++argv;
+
+        if (1 == argc) {
+            std::cout << WARN_PREFIX ORANGE "multi file stack" WHITE " is useless for only 1 file;" << std::endl << std::endl;
+        } else if (!argc) {
             std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-                ORANGE "multi file stack" WHITE " is useless for only 1 file;" << std::endl; isValid = false;
-        } else if (0 == argc - 1) {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-                ORANGE "multi file stack" WHITE " flag detected without any file;" << std::endl; isValid = false;
+                ORANGE "multi file stack" WHITE " flag detected without any file;" << std::endl;
+            return ;
         } else {
             std::cout << AVM_PREFIX ORANGE "multi file stack" WHITE " mode is activated:" << std::endl << std::endl;
-            isMultiFileStack = true; --argc; ++argv;
+            isMultiFileStack = true;
         }
-
-        if (!isValid) { return ; }
     }
 
     for (int i = -1; argc > ++i;) {
@@ -56,7 +55,7 @@ void mainMultiFilesInput(int argc, char *argv[]) {
         commandQueue = r.readFileInput(argv[i], commandQueue);
         if (commandQueue) {
             if (!isMultiFileStack) {
-                p.startProcessing(commandQueue);
+                l.launchAVM(commandQueue);
                 delete commandQueue;
                 commandQueue = NULL;
             }
@@ -72,7 +71,7 @@ void mainMultiFilesInput(int argc, char *argv[]) {
     }
 
     if (commandQueue && isMultiFileStack) {
-        p.startProcessing(commandQueue);
+        l.launchAVM(commandQueue);
         delete commandQueue;
     }
 }
