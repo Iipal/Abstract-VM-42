@@ -2,6 +2,7 @@
 #include "Validation.hpp"
 #include "OperandFactory.hpp"
 #include "LaunchAVM.hpp"
+#include <unistd.h>
 
 std::vector<std::string> *mainCheckMultiFileStackInput(int &argc, char *argv[], Reader const &r);
 
