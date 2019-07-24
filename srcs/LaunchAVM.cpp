@@ -198,23 +198,23 @@ bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
             << command << "\' because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
-        IOperand const *leftOperand = *(_operands->begin());
-        IOperand const *rightOperand = *(++_operands->begin());
+        IOperand const *operand1 = *(_operands->begin());
+        IOperand const *operand2 = *(++_operands->begin());
         IOperand const *result = NULL;
 
-        std::cout << "\'" << (*leftOperand).toString() << "\' " BLUE << op << WHITE " \'" << (*rightOperand).toString() << "\' = ";
+        std::cout << "\'" << (*operand1).toString() << "\' " BLUE << op << WHITE " \'" << (*operand2).toString() << "\' = ";
         switch (op) {
-            case '+': result = *leftOperand + *rightOperand; break;
-            case '-': result = *leftOperand - *rightOperand; break;
-            case '*': result = *leftOperand * *rightOperand; break;
-            case '/': result = *leftOperand / *rightOperand; break;
-            case '%': result = *leftOperand % *rightOperand; break;
+            case '+': result = *operand2 + *operand1; break;
+            case '-': result = *operand2 - *operand1; break;
+            case '*': result = *operand2 * *operand1; break;
+            case '/': result = *operand2 / *operand1; break;
+            case '%': result = *operand2 % *operand1; break;
             default: break;
         }
 
         if (result) {
             std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
-            delete leftOperand; delete rightOperand;
+            delete operand1; delete operand2;
             _operands->pop_front(); _operands->pop_front();
             _operands->push_front(result);
         } else {
