@@ -7,7 +7,7 @@ ReadStandardInputFeatures::ReadStandardInputFeatures() {
     if (_hostName.empty()) { _hostName = std::string("AVM host-name"); }
 
     char *fullExecutablePathBuff = NULL;
-    fullExecutablePathBuff = getcwd(fullExecutablePathBuff, PATH_MAX);
+    fullExecutablePathBuff = getcwd(fullExecutablePathBuff, 1024);
     if (fullExecutablePathBuff) {
         _fullExecutablePath = std::string(fullExecutablePathBuff);
         _fullExecutablePath.append("/avm");

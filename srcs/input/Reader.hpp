@@ -4,7 +4,6 @@
 #include <fstream>
 #include <vector>
 #include <list>
-#include <algorithm>
 #include "IOperand.hpp"
 
 class Reader {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IOperand.hpp"
+#include <algorithm>
 #include <iomanip>
 #include <string>
 

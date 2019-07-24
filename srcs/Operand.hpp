@@ -38,6 +38,57 @@ public:
 
     eOperandType getType(void) const { return this->_type; }
 
+    bool isNewIntValueOverflowType(int64_t newValue, eOperandType const &newType) const {
+        bool isValid = true;
+        switch (newType) {
+            case Int8: {
+                if (INT8_MAX < newValue || INT8_MIN > newValue) {
+                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                        << " is overflow of type int8_t(" UNDERLINE << INT8_MAX << " - " << INT8_MIN << WHITE ");" << std::endl;
+                    isValid = false;
+                } break;
+            }
+            case Int16: {
+                if (INT16_MAX < newValue || INT16_MIN > newValue) {
+                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                        << " is overflow of type int16_t(" UNDERLINE << INT16_MAX << " - " << INT16_MIN << WHITE ");" << std::endl;
+                    isValid = false;
+                } break;
+            }
+            case Int32: {
+                if (INT32_MAX < newValue || INT32_MIN > newValue) {
+                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                        << " is overflow of type int32_t(" UNDERLINE << INT32_MAX << " - " << INT32_MIN << WHITE ");" << std::endl;
+                    isValid = false;
+                } break;
+            }
+            default: break;
+        }
+        return isValid;
+    }
+
+    bool isNewDoubleValueOverflowType(long double newValue, eOperandType const &newType) const {
+        bool isValid = true;
+        switch (newType) {
+            case Float: {
+                if (__FLT_MAX__ < newValue || __FLT_MIN__ > newValue) {
+                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                        << " is overflow of type float(" UNDERLINE << __FLT_MAX__ << " - " << __FLT_MIN__ << WHITE ");" << std::endl;
+                    isValid = false;
+                } break;
+            }
+            case Double: {
+                if (__DBL_MAX__ < newValue || __DBL_MIN__ > newValue) {
+                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                        << " is overflow of type double(" UNDERLINE << __DBL_MAX__ << " - " << __DBL_MIN__ << WHITE ");" << std::endl;
+                    isValid = false;
+                } break;
+            }
+            default: break;
+        }
+        return isValid;
+    }
+
     IOperand const *baseOperators(IOperand const &lOperand, char const op) const {
         bool isValid = true;
         IOperand const *out = NULL;
@@ -53,19 +104,24 @@ public:
                 case '*': newIntValue = lOperandIntValue * this->_value; break;
                 case '/': {
                     if (!lOperandIntValue || !this->_value) {
-                        std::cout << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
+                        std::cout << RED "error" WHITE << std::endl << ERR_REPORT_PREFIX
+                            "one of the operands is zero, division by zero is undefined;" << std::endl;
                         isValid = false;
                     } else { newIntValue = lOperandIntValue / this->_value; }
                     break;
                 }
                 case '%': {
                     if (!lOperandIntValue || !this->_value) {
-                        std::cout << ERR_REPORT_PREFIX "one of the operands is zero, malformed expression;" << std::endl;
+                        std::cout << RED "error" WHITE << std::endl << ERR_REPORT_PREFIX
+                            "one of the operands is zero, malformed expression;" << std::endl;
+                        isValid = false; break;
                     } else { newIntValue = lOperandIntValue / this->_value; }
-                    isValid = false; break;
                 }
                 default: break;
             }
+
+            isValid = isValid ? isNewIntValueOverflowType(newIntValue, newType) : isValid;
+
             if (isValid) {
                 out = gOFactory.createOperand(newType, std::to_string(newIntValue));
             }
@@ -77,17 +133,22 @@ public:
                 case '*': newDoubleValue = lOperandDoubleValue * this->_value; break;
                 case '/': {
                     if (!lOperandDoubleValue || !this->_value) {
-                        std::cout << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
+                        std::cout << RED "error" WHITE << std::endl << ERR_REPORT_PREFIX
+                            "one of the operands is zero, division by zero is undefined;" << std::endl;
                         isValid = false;
                     } else { newDoubleValue = lOperandDoubleValue / this->_value; }
                     break;
                 }
                 case '%': {
-                    std::cout << ERR_REPORT_PREFIX "one of the operands is float-pointing value, malformed expression;" << std::endl;
+                    std::cout << RED "error" WHITE << std::endl << ERR_REPORT_PREFIX
+                        "one of the operands is float-pointing value, malformed expression;" << std::endl;
                     isValid = false; break;
                 }
                 default: break;
             }
+
+            isValid = isValid ? isNewDoubleValueOverflowType(newDoubleValue, newType) : isValid;
+
             if (isValid) {
                 out = gOFactory.createOperand(newType, std::to_string(newDoubleValue));
             }
