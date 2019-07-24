@@ -1,77 +1,68 @@
 #include "Reader.hpp"
+#include "Validation.hpp"
 #include "OperandFactory.hpp"
 #include "LaunchAVM.hpp"
 
-void mainMultiFileStackInput(int argc, char *argv[]);
+std::vector<std::string> *mainCheckMultiFileStackInput(int &argc, char *argv[], Reader const &r);
 
 int main(int argc, char *argv[]) {
     --argc; ++argv;
 
-    if (!argc) {
-        Reader r;
-        std::vector<std::string> *commandQueue = NULL;
-
-        if (isatty(fileno(stdin))) {
-            commandQueue = r.readStandardInput();
-        } else {
-            commandQueue = r.readPipeInput();
-        }
-        if (commandQueue) {
-            LaunchAVM l;
-            l.launchAVM(commandQueue);
-            delete commandQueue;
-        }
-    } else {
-        mainMultiFileStackInput(argc, argv);
-    }
-}
-
-void mainMultiFileStackInput(int argc, char *argv[]) {
     Reader r;
     LaunchAVM l;
     std::vector<std::string> *commandQueue = NULL;
 
-    bool isMultiFileStack = false;
+    if (!argc) {
+        if (isatty(fileno(stdin))) {
+            commandQueue = r.readStandardInput();
+        } else { commandQueue = r.readPipeInput(); }
+    } else {
+        int const oldArgc = argc;
+        commandQueue = mainCheckMultiFileStackInput(argc, argv, r);
+        if (oldArgc != argc) { ++argv; }
 
-    if (std::string(*argv) == "-mfs") {
-        --argc; ++argv;
-
-        if (1 == argc) {
-            std::cout << WARN_PREFIX ORANGE "multi file stack" WHITE " is useless for only 1 file;" << std::endl << std::endl;
-        } else if (!argc) {
-            std::cout << ERR_N_PREFIX(Reader::incrementGlobalErrorsCounter())
-                ORANGE "multi file stack" WHITE " flag detected without any file;" << std::endl;
-            return ;
-        } else {
-            std::cout << AVM_PREFIX ORANGE "multi file stack" WHITE " mode is activated:" << std::endl << std::endl;
-            isMultiFileStack = true;
-        }
-    }
-
-    for (int i = -1; argc > ++i;) {
-        std::cout << AVM_PREFIX CYAN "file" WHITE " input mode( [" UNDERLINE
-            << std::setw(3) << i + 1 << WHITE "]: " << argv[i] << " ):" << std::endl;
-
-        commandQueue = r.readFileInput(argv[i], commandQueue);
-        if (commandQueue) {
-            if (!isMultiFileStack) {
-                l.launchAVM(commandQueue);
-                delete commandQueue;
-                commandQueue = NULL;
-            }
-
-            if (isMultiFileStack && argc != i + 1) {
-                if ((*commandQueue)[commandQueue->size() - 1] == "exit") {
-                    commandQueue->pop_back();
+        if (!commandQueue) {
+            if (1 == argc) {
+                commandQueue = r.readFileInput(*argv);
+            } else {
+                for (int i = 0; argc > i; i++) {
+                    commandQueue = r.readFileInput(argv[i]);
+                    if (commandQueue) {
+                        l.launchAVM(commandQueue);
+                        delete commandQueue;
+                        commandQueue = NULL;
+                    }
                 }
             }
         }
-
-        if (argc != i + 1) { std::cout << std::endl; }
     }
 
-    if (commandQueue && isMultiFileStack) {
+    if (commandQueue) {
         l.launchAVM(commandQueue);
         delete commandQueue;
     }
+}
+
+std::vector<std::string> *mainCheckMultiFileStackInput(int &argc, char *argv[], Reader const &r) {
+    std::vector<std::string> *commandQueue = NULL;
+
+    bool isMultiFileStackMode = false;
+    if (std::string(*argv) == "-mfs") {
+        isMultiFileStackMode = true;
+        --argc; ++argv;
+    }
+
+    if (isMultiFileStackMode) {
+        if (!argc) {
+            std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter())
+                ORANGE "multi file stack" WHITE " flag detected without any files input in arguments;" << std::endl;
+        } else if (1 == argc) {
+            std::cout << WARN_PREFIX ORANGE "multi file stack" WHITE " is useless for only 1 file;" << std::endl << std::endl;
+        } else {
+            std::cout << AVM_PREFIX ORANGE "multi file stack" WHITE " mode is activated:" << std::endl << std::endl;
+            commandQueue = r.readMultiFileStackInput(argc, argv);
+        }
+    }
+
+    return commandQueue;
 }

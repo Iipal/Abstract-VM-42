@@ -4,10 +4,11 @@ NPWD := $(CURDIR)/$(NAME)
 CC_BASE := g++ -march=native -mtune=native -std=c++11
 
 CC := $(CC_BASE) -Ofast -flto -pipe
-CC_DEBUG := $(CC_BASE) -g3 -D DEBUG -fsanitize=address
+CC_DEBUG := $(CC_BASE) -g3 -D DEBUG #-fsanitize=address
 CFLAGS := -Wall -Wextra -Werror -Wunused
+IFLAGS := -I srcs/ -I srcs/input/
 
-SRCS := $(abspath $(wildcard srcs/*.cpp))
+SRCS := $(abspath $(wildcard srcs/*.cpp srcs/*/*.cpp))
 OBJ := $(SRCS:.cpp=.o)
 
 DEL := rm -rf
@@ -25,7 +26,7 @@ all: $(NAME)
 
 $(OBJ): %.o: %.cpp
 	@echo -n ' $@: '
-	@$(CC) -c $(CFLAGS) $< -o $@
+	@$(CC) -c $(CFLAGS) $(IFLAGS) $< -o $@
 	@echo "$(SUCCESS)"
 
 $(NAME): $(OBJ)

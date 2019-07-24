@@ -3,6 +3,7 @@
 #include "IOperand.hpp"
 #include "OperandFactory.hpp"
 #include "Reader.hpp"
+#include "Validation.hpp"
 
 template<typename T>
 class Operand : public IOperand {
