@@ -158,23 +158,30 @@ bool LaunchAVM::parsePop() {
     return true;
 }
 
-void LaunchAVM::baseDisplay(IOperand const *it, size_t i) {
-    std::cout << std::setiosflags(std::ios::right) << "[" UNDERLINE << std::setw(6) << i << WHITE "]: " << it->toString();
-    if (Int32 < it->getType()) {
-        std::cout << ", precision = " << it->getPrecision();
-    }
-    std::cout << ';' << std::endl;
-}
-
 bool LaunchAVM::parsePrint() {
+    bool isValid = true;
     if (!_operands->size()) {
         std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter())
             "any values currently pushed, \'print\' can't display top value;" << std::endl;
-        return false;
+        isValid = false;
     } else {
-        baseDisplay(*(_operands->begin()), 1);
+        IOperand const *printOp = *(_operands->begin());
+        if (Int8 == printOp->getType()) {
+            std::string const printValueStr = printOp->toString();
+            int32_t printValue = std::stoi(printValueStr.substr(printValueStr.find_first_of('(', 0) + 1, printValueStr.length() - printValueStr.find_first_of('(', 0) - 2));
+            if (32 <= printValue && 127 >= printValue) {
+                std::cout << " print: \'" << static_cast<char>(printValue) << "\';" << std::endl;
+            } else {
+                std::cout << WARN_PREFIX "Non " ORANGE "print" WHITE "able value;" << std::endl;
+                isValid = false;
+            }
+        } else {
+            std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "top value( \'" UNDERLINE
+                << (*(_operands->begin()))->toString() << "has non " RED "print" WHITE "ble(int8 aka char) type;";
+            isValid = false;
+        }
     }
-    return true;
+    return isValid;
 }
 
 bool LaunchAVM::parseDump() {
@@ -183,10 +190,16 @@ bool LaunchAVM::parseDump() {
             "any values currently pushed, \'dump\' can't print all stack values;" << std::endl;
         return false;
     } else {
-        size_t elementNumber = ~0ULL;
-        std::list<IOperand const*>::const_iterator it = _operands->begin();
+        size_t elementNumber = 0;
+        std::list<IOperand const*>::iterator it = _operands->begin();
         while (_operands->end() != it) {
-            baseDisplay(*it++, ++elementNumber + 1);
+            ++elementNumber;
+            std::cout << std::setiosflags(std::ios::right) << "[" UNDERLINE << std::setw(6) << elementNumber << WHITE "]: " << (*it)->toString();
+            if (Int32 < (*it)->getType()) {
+                std::cout << ", precision = " << (*it)->getPrecision();
+            }
+            std::cout << ';' << std::endl;
+            ++it;
         }
     }
     return true;

@@ -29,7 +29,6 @@ private:
     bool parseExit();
     bool parsePop();
 
-    void baseDisplay(IOperand const *it, size_t i);
     bool parsePrint();
     bool parseDump();
 
