@@ -25,15 +25,24 @@ IOperand const *OperandFactory::createOperand(eOperandType type, std::string con
 
 /* private methods */
 IOperand const *OperandFactory::createInt8(std::string const &value) const {
-    return new Operand<int8_t>(Int8, std::string("int8(" + value + ")"), static_cast<int8_t>(std::stoi(value)));
+    std::istringstream iss(value);
+    int16_t _value;
+    iss >> _value;
+    return new Operand<int8_t>(Int8, std::string("int8(" + value + ")"), _value);
 }
 
 IOperand const *OperandFactory::createInt16(std::string const &value) const {
-    return new Operand<int16_t>(Int16, std::string("int16(" + value + ")"), static_cast<int16_t>(std::stoi(value)));
+    std::istringstream iss(value);
+    int16_t _value;
+    iss >> _value;
+    return new Operand<int16_t>(Int16, std::string("int16(" + value + ")"), _value);
 }
 
 IOperand const *OperandFactory::createInt32(std::string const &value) const {
-    return new Operand<int32_t>(Int32, std::string("int32(" + value + ")"), std::stoi(value));
+    std::istringstream iss(value);
+    int32_t _value;
+    iss >> _value;
+    return new Operand<int32_t>(Int32, std::string("int32(" + value + ")"), _value);
 }
 
 IOperand const *OperandFactory::createFloat(std::string const &value) const {
@@ -48,7 +57,12 @@ IOperand const *OperandFactory::createFloat(std::string const &value) const {
         _value.erase(_valueFloatingPointDot + 1);
         _value.append(_valueAfterDot);
     }
-    return new Operand<float>(Float, std::string("float(" + _value + ")"), std::stof(value));
+
+    std::istringstream iss(_value);
+    float _fvalue;
+    iss >> _fvalue;
+
+    return new Operand<float>(Float, std::string("float(" + _value + ")"), _fvalue);
 }
 
 IOperand const *OperandFactory::createDouble(std::string const &value) const {
@@ -63,5 +77,10 @@ IOperand const *OperandFactory::createDouble(std::string const &value) const {
         _value.erase(_valueFloatingPointDot + 1);
         _value.append(_valueAfterDot);
     }
-    return new Operand<double>(Double, std::string("double(" + _value + ")"), std::stod(value));
+
+    std::istringstream iss(_value);
+    float _dvalue;
+    iss >> _dvalue;
+
+    return new Operand<double>(Double, std::string("double(" + _value + ")"), _dvalue);
 }

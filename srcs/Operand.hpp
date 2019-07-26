@@ -147,7 +147,9 @@ IOperand const *Operand<T>::baseOperators(IOperand const &lOperand, char const o
         isValid = isValid ? isNewIntValueOverflowType(newIntValue, newType) : isValid;
 
         if (isValid) {
-            out = gOFactory.createOperand(newType, std::to_string(newIntValue));
+            std::ostringstream ss;
+            ss << newIntValue;
+            out = gOFactory.createOperand(newType, ss.str());
         }
     } else {
         long double lOperandDoubleValue = std::stold(lOperandStrValue), newDoubleValue = 0.0L;
@@ -173,7 +175,9 @@ IOperand const *Operand<T>::baseOperators(IOperand const &lOperand, char const o
         isValid = isValid ? isNewDoubleValueOverflowType(newDoubleValue, newType) : isValid;
 
         if (isValid) {
-            out = gOFactory.createOperand(newType, std::to_string(newDoubleValue));
+            std::ostringstream ss;
+            ss << newDoubleValue;
+            out = gOFactory.createOperand(newType, ss.str());
         }
     }
     return out;

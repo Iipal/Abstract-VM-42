@@ -4,6 +4,7 @@
 #include "Validation.hpp"
 #include <algorithm>
 #include <iomanip>
+#include <sstream>
 #include <string>
 
 #define RED "\033[38;5;1m"
@@ -41,8 +42,7 @@ public:
 
     bool validatingReadedCommand(std::string &command) const;
     bool validatingCommandParam(std::string &commandParam) const;
-    bool validatingCommandParamValueInRange(std::string const &paramValue, eOperandType type,
-        std::string &commandParam, bool isNegative, size_t bracket) const;
+    bool validatingCommandParamValueInRange(std::string const &paramValue, eOperandType type, bool isNegative) const;
 
 private:
     static size_t _globalErrorsCounter;

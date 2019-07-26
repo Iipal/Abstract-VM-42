@@ -115,7 +115,7 @@ bool Validation::validatingCommandParam(std::string &commandParam) const {
                     std::string exponent = _paramValue;
                     const size_t floatDotInParam = _paramValue.find_first_of('.', 0);
                     if (floatDotInParam < _paramValue.length()) {
-                        exponent.erase(floatDotInParam + 1);
+                        exponent = _paramValue.substr(0, floatDotInParam);
                     }
                     isValidExponent = validatingCommandParamValueIsDigits(exponent);
 
@@ -130,7 +130,7 @@ bool Validation::validatingCommandParam(std::string &commandParam) const {
                         }
                     }
                     if (isValidExponent && isValidMantissa) {
-                        return validatingCommandParamValueInRange(_paramValue, static_cast<eOperandType>(i), commandParam, isNegative, _paramValueTypeParamStartBracketPos);
+                        return validatingCommandParamValueInRange(_paramValue, static_cast<eOperandType>(i), isNegative);
                     }
                     return isValidExponent && isValidMantissa;
                 }
@@ -146,7 +146,7 @@ bool Validation::validatingCommandParam(std::string &commandParam) const {
                 isValid = false;
             }
             if (isValid) {
-                isValid = validatingCommandParamValueInRange(_paramValue, static_cast<eOperandType>(i), commandParam, isNegative, _paramValueTypeParamStartBracketPos);
+                isValid = validatingCommandParamValueInRange(_paramValue, static_cast<eOperandType>(i), isNegative);
             }
             return isValid;
         }
@@ -170,77 +170,67 @@ static inline bool baseValidatingCommandParamValueInRange(std::string const &par
     bool isValid = true;
 
     try {
-        int64_t newIntValue = 0;
-        long double newFloatValue = 0.0;
-
-        if (Float > type) {
-            newIntValue = std::stol(paramValue) * (isNegative ? -1 : 1);
-        } else {
-            newFloatValue = std::stold(paramValue) * (isNegative ? -1 : 1);
-        }
+        std::istringstream iss(paramValue);
+        T resValue = 0;
+        iss >> resValue;
+        resValue *= (isNegative ? -1 : 1);
 
         switch (type) {
             case Int8: {
-                if (INT8_MAX < newIntValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newIntValue << WHITE "\' is overflow of max type int8 value: " UNDERLINE << INT8_MAX << WHITE ";" << std::endl;
+                if (INT8_MAX < resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is overflow of max type int8 value: " UNDERLINE << INT8_MAX << WHITE ";" << std::endl;
                     isValid = false;
-                } else if (INT8_MIN > newIntValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newIntValue << WHITE "\' is underflow of min type int8 value: " UNDERLINE << INT8_MIN << WHITE ";" << std::endl;
+                } else if (INT8_MIN > resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is underflow of min type int8 value: " UNDERLINE << INT8_MIN << WHITE ";" << std::endl;
                     isValid = false;
-                } else {
-                    trueValue = newIntValue;
                 }
                 break;
             }
             case Int16: {
-                if (INT16_MAX < newIntValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newIntValue << WHITE "\' is overflow of max type int16 value: " UNDERLINE << INT16_MAX << WHITE ";" << std::endl;
+                if (INT16_MAX < resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is overflow of max type int16 value: " UNDERLINE << INT16_MAX << WHITE ";" << std::endl;
                     isValid = false;
-                } else if (INT16_MIN > newIntValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newIntValue << WHITE "\' is underflow of min type int16 value: " UNDERLINE << INT16_MIN << WHITE ";" << std::endl;
+                } else if (INT16_MIN > resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is underflow of min type int16 value: " UNDERLINE << INT16_MIN << WHITE ";" << std::endl;
                     isValid = false;
-                } else {
-                    trueValue = newIntValue;
                 }
                 break;
             }
             case Int32: {
-                if (INT32_MAX < newIntValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newIntValue << WHITE "\' is overflow of max type int32 value: " UNDERLINE << INT32_MAX << WHITE ";" << std::endl;
+                if (INT32_MAX < resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is overflow of max type int32 value: " UNDERLINE << INT32_MAX << WHITE ";" << std::endl;
                     isValid = false;
-                } else if (INT32_MIN > newIntValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newIntValue << WHITE "\' is underflow of min type int32 value: " UNDERLINE << INT32_MIN << WHITE ";" << std::endl;
+                } else if (INT32_MIN > resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is underflow of min type int32 value: " UNDERLINE << INT32_MIN << WHITE ";" << std::endl;
                     isValid = false;
-                } else {
-                    trueValue = newIntValue;
                 }
                 break;
             }
             case Float: {
-                if (__FLT_MAX__ < newFloatValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newFloatValue << WHITE "\' is overflow of max type float value: " UNDERLINE << __FLT_MAX__ << WHITE ";" << std::endl;
+                if (__FLT_MAX__ < resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is overflow of max type float value: " UNDERLINE << __FLT_MAX__ << WHITE ";" << std::endl;
                     isValid = false;
-                } else if (__FLT_MIN__ > newFloatValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newFloatValue << WHITE "\' is underflow of min type float value: " UNDERLINE << __FLT_MIN__ << WHITE ";" << std::endl;
+                } else if (__FLT_MIN__ > resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is underflow of min type float value: " UNDERLINE << __FLT_MIN__ << WHITE ";" << std::endl;
                     isValid = false;
-                } else {
-                    trueValue = newFloatValue;
                 }
                 break;
             }
             case Double: {
-                if (__DBL_MAX__ < newFloatValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newFloatValue << WHITE "\' is overflow of max type double value: " UNDERLINE << __DBL_MAX__ << WHITE ";" << std::endl;
+                if (__DBL_MAX__ < resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is overflow of max type double value: " UNDERLINE << __DBL_MAX__ << WHITE ";" << std::endl;
                     isValid = false;
-                } else if (__DBL_MIN__ > newFloatValue) {
-                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newFloatValue << WHITE "\' is underflow of min type double value: " UNDERLINE << __DBL_MIN__ << WHITE ";" << std::endl;
+                } else if (__DBL_MIN__ > resValue) {
+                    std::cout << ERR_REPORT_PREFIX "\'" RED UNDERLINE << resValue << WHITE "\' is underflow of min type double value: " UNDERLINE << __DBL_MIN__ << WHITE ";" << std::endl;
                     isValid = false;
-                } else {
-                    trueValue = newFloatValue;
                 }
                 break;
             }
             default: break;
+        }
+
+        if (isValid) {
+            trueValue = resValue;
         }
     } catch (std::exception &e) {
         std::cout << ERR_REPORT_PREFIX << "invalid value for reading with \'std::" << e.what() << "\';" << std::endl;
@@ -249,14 +239,8 @@ static inline bool baseValidatingCommandParamValueInRange(std::string const &par
     return isValid;
 }
 
-template <typename T>
-static inline void baseConvertCommandParamInRangeValue(T const resValue, std::string &commandParam, size_t const &bracket) {
-    commandParam.erase(bracket + 1);
-    commandParam.append(std::to_string(resValue) + ")");
-}
 
-bool Validation::validatingCommandParamValueInRange(std::string const &paramValue, eOperandType type,
-    std::string &commandParam, bool isNegative, size_t bracket) const {
+bool Validation::validatingCommandParamValueInRange(std::string const &paramValue, eOperandType type, bool isNegative) const {
     bool isValid = true;
 
     long double trueFloatValue = 0.0;
@@ -265,21 +249,6 @@ bool Validation::validatingCommandParamValueInRange(std::string const &paramValu
         isValid = baseValidatingCommandParamValueInRange(paramValue, trueIntValue, type, isNegative);
     } else {
         isValid = baseValidatingCommandParamValueInRange(paramValue, trueFloatValue, type, isNegative);
-    }
-
-    if (isValid) {
-        trueIntValue *= (isNegative ? -1 : 1);
-        trueFloatValue *= (isNegative ? -1.0 : 1.0);
-        switch (type) {
-            case Int8: baseConvertCommandParamInRangeValue(static_cast<int8_t>(trueIntValue), commandParam, bracket); break;
-            case Int16: baseConvertCommandParamInRangeValue(static_cast<int16_t>(trueIntValue), commandParam, bracket); break;
-            case Int32: baseConvertCommandParamInRangeValue(static_cast<int32_t>(trueIntValue), commandParam, bracket); break;
-
-            case Float: baseConvertCommandParamInRangeValue(static_cast<float>(trueFloatValue), commandParam, bracket); break;
-            case Double: baseConvertCommandParamInRangeValue(static_cast<double>(trueFloatValue), commandParam, bracket); break;
-
-            default: break;
-        }
     }
 
     return isValid;

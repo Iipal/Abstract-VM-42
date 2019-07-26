@@ -100,7 +100,7 @@ bool LaunchAVM::parsePush(std::string const &param) {
     size_t i = ~0ULL;
     while (MaxOperandTypes > ++i) {
         if (_validPushParamTypes[i] == _paramType) {
-            _oType = static_cast<eOperandType>(i);
+            _oType = static_cast<eOperandType>(i); break;
         }
     }
 
@@ -169,7 +169,9 @@ bool LaunchAVM::parsePrint() {
         IOperand const *printOp = *(_operands->begin());
         if (Int8 == printOp->getType()) {
             std::string const printValueStr = printOp->toString();
-            int32_t printValue = std::stoi(printValueStr.substr(printValueStr.find_first_of('(', 0) + 1, printValueStr.length() - printValueStr.find_first_of('(', 0) - 2));
+            std::istringstream iss(printValueStr.substr(printValueStr.find_first_of('(', 0) + 1, printValueStr.length() - printValueStr.find_first_of('(', 0) - 2));
+            int32_t printValue = 0;
+            iss >> printValue;
             if (32 <= printValue && 127 >= printValue) {
                 std::cout << '\'' << static_cast<char>(printValue) << "\';" << std::endl;
             } else {
