@@ -239,7 +239,6 @@ static inline bool baseValidatingCommandParamValueInRange(std::string const &par
     return isValid;
 }
 
-
 bool Validation::validatingCommandParamValueInRange(std::string const &paramValue, eOperandType type, bool isNegative) const {
     bool isValid = true;
 
@@ -250,6 +249,5 @@ bool Validation::validatingCommandParamValueInRange(std::string const &paramValu
     } else {
         isValid = baseValidatingCommandParamValueInRange(paramValue, trueFloatValue, type, isNegative);
     }
-
     return isValid;
 }

@@ -63,7 +63,7 @@ inline int Operand<T>::getPrecision(void) const {
     return _precision;
 }
 
-static bool isNewIntValueOverflowType(int64_t newValue, eOperandType const &newType) {
+static bool isNewValueOverflowType(long double const newValue, eOperandType const newType) {
     bool isValid = true;
     switch (newType) {
         case Int8: {
@@ -87,14 +87,6 @@ static bool isNewIntValueOverflowType(int64_t newValue, eOperandType const &newT
                 isValid = false;
             } break;
         }
-        default: break;
-    }
-    return isValid;
-}
-
-static bool isNewDoubleValueOverflowType(long double newValue, eOperandType const &newType) {
-    bool isValid = true;
-    switch (newType) {
         case Float: {
             if (__FLT_MAX__ < newValue || __FLT_MIN__ > newValue) {
                 std::cout << ERR << std::endl <<  ERR_REPORT_PREFIX << newValue
@@ -122,63 +114,45 @@ IOperand const *Operand<T>::baseOperators(IOperand const &lOperand, char const o
     eOperandType newType = (_type >= lOperand.getType()) ? _type : lOperand.getType();
     std::string const &lOperandStrValue = lOperand.toString().substr(lOperand.toString().find_first_of('(', 0) + 1, lOperand.toString().length() - 2);
 
-    if (Float > newType) {
-        int64_t lOperandIntValue = std::stol(lOperandStrValue), newIntValue = 0;
-        switch (op) {
-            case '+': newIntValue = lOperandIntValue + _value; break;
-            case '-': newIntValue = lOperandIntValue - _value; break;
-            case '*': newIntValue = lOperandIntValue * _value; break;
-            case '/': {
-                if (!lOperandIntValue || !_value) {
-                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
-                    isValid = false;
-                } else { newIntValue = lOperandIntValue / _value; }
-                break;
-            }
-            case '%': {
-                if (!lOperandIntValue || !_value) {
-                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, malformed expression;" << std::endl;
-                    isValid = false; break;
-                } else { newIntValue = lOperandIntValue / _value; }
-            }
-            default: break;
-        }
+    std::istringstream ss(lOperandStrValue);
 
-        isValid = isValid ? isNewIntValueOverflowType(newIntValue, newType) : isValid;
+    long double newValue = 0.0L;
+    long double lOperandValue = 0.0L;
+    ss >> lOperandValue;
 
-        if (isValid) {
-            std::ostringstream ss;
-            ss << newIntValue;
-            out = gOFactory.createOperand(newType, ss.str());
+    switch (op) {
+        case '+': newValue = lOperandValue + _value; break;
+        case '-': newValue = lOperandValue - _value; break;
+        case '*': newValue = lOperandValue * _value; break;
+        case '/': {
+            if (!lOperandValue || !_value) {
+                std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
+                isValid = false;
+            } else { newValue = lOperandValue / _value; }
+            break;
         }
-    } else {
-        long double lOperandDoubleValue = std::stold(lOperandStrValue), newDoubleValue = 0.0L;
-        switch (op) {
-            case '+': newDoubleValue = lOperandDoubleValue + _value; break;
-            case '-': newDoubleValue = lOperandDoubleValue - _value; break;
-            case '*': newDoubleValue = lOperandDoubleValue * _value; break;
-            case '/': {
-                if (!lOperandDoubleValue || !_value) {
-                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
-                    isValid = false;
-                } else { newDoubleValue = lOperandDoubleValue / _value; }
-                break;
-            }
-            case '%': {
+        case '%': {
+            if (!lOperandValue || !_value) {
+                std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, malformed expression;" << std::endl;
+                isValid = false;
+            } else if (Int32 < newType) {
                 std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is float-pointing value, malformed expression;" << std::endl;
                 isValid = false;
-                break;
-            }
-            default: break;
+            } else { newValue = static_cast<int32_t>(lOperandValue) / static_cast<int32_t>(_value); }
+            break;
         }
+    }
 
-        isValid = isValid ? isNewDoubleValueOverflowType(newDoubleValue, newType) : isValid;
+    isValid = isValid ? isNewValueOverflowType(newValue, newType) : isValid;
 
-        if (isValid) {
-            std::ostringstream ss;
-            ss << newDoubleValue;
-            out = gOFactory.createOperand(newType, ss.str());
+    if (isValid) {
+        std::ostringstream ss;
+        if (Int32 < newType) {
+            ss << newValue;
+        } else {
+            ss << static_cast<int32_t>(newValue);
         }
+        out = gOFactory.createOperand(newType, ss.str());
     }
     return out;
 }

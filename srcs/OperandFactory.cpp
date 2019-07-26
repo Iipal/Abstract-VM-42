@@ -28,7 +28,7 @@ IOperand const *OperandFactory::createInt8(std::string const &value) const {
     std::istringstream iss(value);
     int16_t _value;
     iss >> _value;
-    return new Operand<int8_t>(Int8, std::string("int8(" + value + ")"), _value);
+    return new Operand<int8_t>(Int8, std::string("int8(" + value + ")"), static_cast<int8_t>(_value));
 }
 
 IOperand const *OperandFactory::createInt16(std::string const &value) const {
