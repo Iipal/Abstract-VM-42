@@ -34,7 +34,9 @@ bool ReadStandardInputFeatures::parseSpecCommands(std::string const &command, st
         if (command == _shortSpecCommands[i] || command == _specCommands[i]) {
             if (3 == i) {
                 isValid = specHelp();
-            } else  { isValid = (this->*fnptrSpecFuncs[i])(commandQueue); }
+            } else  {
+                isValid = (this->*fnptrSpecFuncs[i])(commandQueue);
+            }
         }
     }
     return isValid;
@@ -52,7 +54,7 @@ bool ReadStandardInputFeatures::specList(std::vector<std::string> &commandQueue)
 
         if (!commandQueue[i].compare(commandQueue[i].find_first_of(' ', 0) + 1, 4, "int8")) {
             std::istringstream iss(commandQueue[i].substr(commandQueue[i].find_first_of('(', 0) + 1, commandQueue[i].length() - commandQueue[i].find_first_of('(', 0) - 2));
-            int8_t value;
+            int32_t value;
             iss >> value;
             if (0x20 <= value && 0x7f > value) {
                 std::cout << DIM " : \'" << static_cast<char>(value) << "\'" WHITE;

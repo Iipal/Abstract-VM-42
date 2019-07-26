@@ -105,38 +105,38 @@ static bool isNewValueOverflowType(long double const newValue, eOperandType cons
 }
 
 template <typename T>
-IOperand const *Operand<T>::baseOperators(IOperand const &lOperand, char const op) const {
+IOperand const *Operand<T>::baseOperators(IOperand const &rOperand, char const op) const {
     bool isValid = true;
     IOperand const *out = NULL;
 
-    eOperandType newType = (_type >= lOperand.getType()) ? _type : lOperand.getType();
-    std::string const &lOperandStrValue = lOperand.toString().substr(lOperand.toString().find_first_of('(', 0) + 1, lOperand.toString().length() - 2);
+    eOperandType newType = (_type >= rOperand.getType()) ? _type : rOperand.getType();
+    std::string const &rOperandStrValue = rOperand.toString().substr(rOperand.toString().find_first_of('(', 0) + 1, rOperand.toString().length() - 2);
 
-    std::istringstream ss(lOperandStrValue);
+    std::istringstream ss(rOperandStrValue);
 
     long double newValue = 0.0L;
-    long double lOperandValue = 0.0L;
-    ss >> lOperandValue;
+    long double rOperandValue = 0.0L;
+    ss >> rOperandValue;
 
     switch (op) {
-        case '+': newValue = lOperandValue + _value; break;
-        case '-': newValue = lOperandValue - _value; break;
-        case '*': newValue = lOperandValue * _value; break;
+        case '+': newValue = _value + rOperandValue; break;
+        case '-': newValue = _value - rOperandValue; break;
+        case '*': newValue = _value * rOperandValue; break;
         case '/': {
-            if (!lOperandValue || !_value) {
+            if (!rOperandValue || !_value) {
                 std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
                 isValid = false;
-            } else { newValue = lOperandValue / _value; }
+            } else { newValue = _value / rOperandValue; }
             break;
         }
         case '%': {
-            if (!lOperandValue || !_value) {
+            if (!rOperandValue || !_value) {
                 std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, malformed expression;" << std::endl;
                 isValid = false;
             } else if (Int32 < newType) {
                 std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is float-pointing value, malformed expression;" << std::endl;
                 isValid = false;
-            } else { newValue = static_cast<int32_t>(lOperandValue) / static_cast<int32_t>(_value); }
+            } else { newValue = static_cast<int32_t>(_value) % static_cast<int32_t>(rOperandValue); }
             break;
         }
     }
@@ -155,10 +155,10 @@ IOperand const *Operand<T>::baseOperators(IOperand const &lOperand, char const o
     return out;
 }
 
-template<typename T> IOperand const *Operand<T>::operator+(IOperand const &lOperand) const { return baseOperators(lOperand, '+'); }
-template<typename T> IOperand const *Operand<T>::operator-(IOperand const &lOperand) const { return baseOperators(lOperand, '-'); }
-template<typename T> IOperand const *Operand<T>::operator*(IOperand const &lOperand) const { return baseOperators(lOperand, '*'); }
-template<typename T> IOperand const *Operand<T>::operator/(IOperand const &lOperand) const { return baseOperators(lOperand, '/'); }
-template<typename T> IOperand const *Operand<T>::operator%(IOperand const &lOperand) const { return baseOperators(lOperand, '%'); }
+template<typename T> IOperand const *Operand<T>::operator+(IOperand const &rOperand) const { return baseOperators(rOperand, '+'); }
+template<typename T> IOperand const *Operand<T>::operator-(IOperand const &rOperand) const { return baseOperators(rOperand, '-'); }
+template<typename T> IOperand const *Operand<T>::operator*(IOperand const &rOperand) const { return baseOperators(rOperand, '*'); }
+template<typename T> IOperand const *Operand<T>::operator/(IOperand const &rOperand) const { return baseOperators(rOperand, '/'); }
+template<typename T> IOperand const *Operand<T>::operator%(IOperand const &rOperand) const { return baseOperators(rOperand, '%'); }
 
 template<typename T> std::string const &Operand<T>::toString(void) const { return _valueStr; }

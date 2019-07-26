@@ -170,8 +170,9 @@ bool LaunchAVM::parsePrint() {
         if (Int8 == printOp->getType()) {
             std::string const printValueStr = printOp->toString();
             std::istringstream iss(printValueStr.substr(printValueStr.find_first_of('(', 0) + 1, printValueStr.length() - printValueStr.find_first_of('(', 0) - 2));
-            int8_t printValue;
+            int32_t printValue = 0;
             iss >> printValue;
+            std::cout << printValue << std::endl;
             if (0x20 <= printValue && 0x7f > printValue) {
                 std::cout << '\'' << static_cast<char>(printValue) << "\';" << std::endl;
             } else {
@@ -213,23 +214,23 @@ bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
             << command << "\' because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
-        IOperand const *operand1 = *(_operands->begin());
-        IOperand const *operand2 = *(++_operands->begin());
+        IOperand const *lOperand = *(_operands->begin());
+        IOperand const *rOperand = *(++_operands->begin());
         IOperand const *result = NULL;
 
-        std::cout << "\'" << (*operand1).toString() << "\' " BLUE << op << WHITE " \'" << (*operand2).toString() << "\' = ";
+        std::cout << "\'" << (*lOperand).toString() << "\' " BLUE << op << WHITE " \'" << (*rOperand).toString() << "\' = ";
         switch (op) {
-            case '+': result = *operand2 + *operand1; break;
-            case '-': result = *operand2 - *operand1; break;
-            case '*': result = *operand2 * *operand1; break;
-            case '/': result = *operand2 / *operand1; break;
-            case '%': result = *operand2 % *operand1; break;
+            case '+': result = *lOperand + *rOperand; break;
+            case '-': result = *lOperand - *rOperand; break;
+            case '*': result = *lOperand * *rOperand; break;
+            case '/': result = *lOperand / *rOperand; break;
+            case '%': result = *lOperand % *rOperand; break;
             default: break;
         }
 
         if (result) {
             std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
-            delete operand1; delete operand2;
+            delete lOperand; delete rOperand;
             _operands->pop_front(); _operands->pop_front();
             _operands->push_front(result);
         } else {
