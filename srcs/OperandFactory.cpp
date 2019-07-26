@@ -46,41 +46,16 @@ IOperand const *OperandFactory::createInt32(std::string const &value) const {
 }
 
 IOperand const *OperandFactory::createFloat(std::string const &value) const {
-    std::string _value = value;
-    const size_t _valueFloatingPointDot = _value.find_first_of('.', 0);
-    if (_valueFloatingPointDot < _value.length()) {
-        std::string _valueAfterDot = _value.substr(_valueFloatingPointDot + 1, _value.length() - _valueFloatingPointDot);
-        _valueAfterDot.erase(std::find_if(_valueAfterDot.rbegin(), _valueAfterDot.rend(), [](int ch){ return ch != '0'; }).base(), _valueAfterDot.end());
-        if (_valueAfterDot.empty()) {
-            _valueAfterDot.append("0");
-        }
-        _value.erase(_valueFloatingPointDot + 1);
-        _value.append(_valueAfterDot);
-    }
-
-    std::istringstream iss(_value);
-    float _fvalue;
-    iss >> _fvalue;
-
-    return new Operand<float>(Float, std::string("float(" + _value + ")"), _fvalue);
+    std::istringstream iss(value);
+    float _value;
+    iss >> _value;
+    return new Operand<float>(Float, std::string("float(" + value + ")"), _value);
 }
 
 IOperand const *OperandFactory::createDouble(std::string const &value) const {
-    std::string _value = value;
-    const size_t _valueFloatingPointDot = _value.find_first_of('.', 0);
-    if (_valueFloatingPointDot < _value.length()) {
-        std::string _valueAfterDot = _value.substr(_valueFloatingPointDot + 1, _value.length() - _valueFloatingPointDot);
-        _valueAfterDot.erase(std::find_if(_valueAfterDot.rbegin(), _valueAfterDot.rend(), [](int ch){ return ch != '0'; }).base(), _valueAfterDot.end());
-        if (_valueAfterDot.empty()) {
-            _valueAfterDot.append("0");
-        }
-        _value.erase(_valueFloatingPointDot + 1);
-        _value.append(_valueAfterDot);
-    }
+    std::istringstream iss(value);
+    double _value;
+    iss >> _value;
 
-    std::istringstream iss(_value);
-    float _dvalue;
-    iss >> _dvalue;
-
-    return new Operand<double>(Double, std::string("double(" + _value + ")"), _dvalue);
+    return new Operand<double>(Double, std::string("double(" + value + ")"), _value);
 }
