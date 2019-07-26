@@ -68,21 +68,21 @@ static bool isNewIntValueOverflowType(int64_t newValue, eOperandType const &newT
     switch (newType) {
         case Int8: {
             if (INT8_MAX < newValue || INT8_MIN > newValue) {
-                std::cout << ERR << std::endl <<  ERR_REPORT_PREFIX << newValue
+                std::cout << ERR << std::endl << ERR_REPORT_PREFIX << newValue
                     << " is overflow of type int8_t(" UNDERLINE << INT8_MAX << " - " << INT8_MIN << WHITE ");" << std::endl;
                 isValid = false;
             } break;
         }
         case Int16: {
             if (INT16_MAX < newValue || INT16_MIN > newValue) {
-                std::cout << ERR << std::endl <<  ERR_REPORT_PREFIX << newValue
+                std::cout << ERR << std::endl << ERR_REPORT_PREFIX << newValue
                     << " is overflow of type int16_t(" UNDERLINE << INT16_MAX << " - " << INT16_MIN << WHITE ");" << std::endl;
                 isValid = false;
             } break;
         }
         case Int32: {
             if (INT32_MAX < newValue || INT32_MIN > newValue) {
-                std::cout << ERR << std::endl <<  ERR_REPORT_PREFIX << newValue
+                std::cout << ERR << std::endl << ERR_REPORT_PREFIX << newValue
                     << " is overflow of type int32_t(" UNDERLINE << INT32_MAX << " - " << INT32_MIN << WHITE ");" << std::endl;
                 isValid = false;
             } break;
@@ -130,16 +130,14 @@ IOperand const *Operand<T>::baseOperators(IOperand const &lOperand, char const o
             case '*': newIntValue = lOperandIntValue * _value; break;
             case '/': {
                 if (!lOperandIntValue || !_value) {
-                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX
-                        "one of the operands is zero, division by zero is undefined;" << std::endl;
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
                     isValid = false;
                 } else { newIntValue = lOperandIntValue / _value; }
                 break;
             }
             case '%': {
                 if (!lOperandIntValue || !_value) {
-                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX
-                        "one of the operands is zero, malformed expression;" << std::endl;
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, malformed expression;" << std::endl;
                     isValid = false; break;
                 } else { newIntValue = lOperandIntValue / _value; }
             }
@@ -159,16 +157,15 @@ IOperand const *Operand<T>::baseOperators(IOperand const &lOperand, char const o
             case '*': newDoubleValue = lOperandDoubleValue * _value; break;
             case '/': {
                 if (!lOperandDoubleValue || !_value) {
-                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX
-                        "one of the operands is zero, division by zero is undefined;" << std::endl;
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is zero, division by zero is undefined;" << std::endl;
                     isValid = false;
                 } else { newDoubleValue = lOperandDoubleValue / _value; }
                 break;
             }
             case '%': {
-                std::cout << ERR << std::endl << ERR_REPORT_PREFIX
-                    "one of the operands is float-pointing value, malformed expression;" << std::endl;
-                isValid = false; break;
+                std::cout << ERR << std::endl << ERR_REPORT_PREFIX "one of the operands is float-pointing value, malformed expression;" << std::endl;
+                isValid = false;
+                break;
             }
             default: break;
         }

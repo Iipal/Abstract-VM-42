@@ -162,28 +162,74 @@ bool Validation::validatingCommandParam(std::string &commandParam) const {
     return false;
 }
 
-static inline bool baseIntValidatingCommandParamValueInRange(std::string const &paramValue, int32_t &_trueValue, eOperandType const &type) {
-    bool out = true;
+static inline bool baseIntValidatingCommandParamValueInRange(std::string const &paramValue, int64_t &_trueValue, eOperandType const &type) {
+    bool isValid = true;
+    int64_t newValue = 0;
     try {
-        _trueValue = std::stol(paramValue);
+        newValue = std::stol(paramValue);
+        switch (type) {
+            case Int8: {
+                if (INT8_MAX < newValue) {
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newValue
+                        << WHITE "\' is overflow of max type int8_t value: " UNDERLINE << INT8_MAX << WHITE ";" << std::endl;
+                    isValid = false;
+                } else if (INT8_MIN > newValue) {
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newValue
+                        << WHITE "\' is underflow of min type int8_t value: " UNDERLINE << INT8_MIN << WHITE ";" << std::endl;
+                    isValid = false;
+                } else {
+                    _trueValue = newValue;
+                }
+                break;
+            }
+            case Int16: {
+                if (INT16_MAX < newValue) {
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newValue
+                        << WHITE "\' is overflow of max type int16_t value: " UNDERLINE << INT16_MAX << WHITE ";" << std::endl;
+                    isValid = false;
+                } else if (INT16_MIN > newValue) {
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newValue
+                        << WHITE "\' is underflow of min type int16_t value: " UNDERLINE << INT16_MIN << WHITE ";" << std::endl;
+                    isValid = false;
+                } else {
+                    _trueValue = newValue;
+                }
+                break;
+            }
+            case Int32: {
+                if (INT32_MAX < newValue) {
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newValue
+                        << WHITE "\' is overflow of max type int32_t value: " UNDERLINE << INT32_MAX << WHITE ";" << std::endl;
+                    isValid = false;
+                } else if (INT32_MIN > newValue) {
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX "\'" RED UNDERLINE << newValue
+                        << WHITE "\' is underflow of min type int32_t value: " UNDERLINE << INT32_MIN << WHITE ";" << std::endl;
+                    isValid = false;
+                } else {
+                    _trueValue = newValue;
+                }
+                break;
+            }
+            default: break;
+        }
     } catch (std::exception &e) {
         std::cout << ERR_REPORT_PREFIX << "invalid value for reading with \'std::" << e.what()
             << "\', max: " UNDERLINE << INT64_MAX << WHITE ", min: " UNDERLINE << INT64_MIN << WHITE;
         switch (type) {
-            case Int8: std::cout << ", but with overflow to current type int8_t(" UNDERLINE
-                << INT8_MAX << WHITE " - " UNDERLINE << INT8_MIN << WHITE ");" << std::endl; break;
+            case Int8: std::cout << ", but overflow\\underflow value for current type int8_t is: " UNDERLINE
+                << INT8_MAX << WHITE " - " UNDERLINE << INT8_MIN << WHITE ";" << std::endl; break;
 
-            case Int16: std::cout << ", but with overflow to current type int16_t(" UNDERLINE
-                << INT16_MAX << WHITE " - " UNDERLINE << INT16_MIN << WHITE ");" << std::endl; break;
+            case Int16: std::cout << ", but overflow\\underflow value for current type int16_t is: :" UNDERLINE
+                << INT16_MAX << WHITE " - " UNDERLINE << INT16_MIN << WHITE ";" << std::endl; break;
 
-            case Int32: std::cout << ", but with overflow to current type int32_t(" UNDERLINE
-                << INT32_MAX << WHITE " - " UNDERLINE << INT32_MIN << WHITE ");" << std::endl; break;
+            case Int32: std::cout << ", but overflow\\underflow value for current type int32_t is: :" UNDERLINE
+                << INT32_MAX << WHITE " - " UNDERLINE << INT32_MIN << WHITE ";" << std::endl; break;
 
             default: std::cout << ';' << std::endl; break;
         }
-        out = false;
+        isValid = false;
     }
-    return out;
+    return isValid;
 }
 
 template <typename T>
@@ -198,7 +244,7 @@ bool Validation::validatingCommandParamValueInRange(std::string const &paramValu
 
     double _trueFloatValue = std::stod(paramValue);
 
-    int32_t _trueIntValue;
+    int64_t _trueIntValue;
     if (Float > type) {
         isValid = baseIntValidatingCommandParamValueInRange(paramValue, _trueIntValue, type);
     }
