@@ -170,9 +170,9 @@ bool LaunchAVM::parsePrint() {
         if (Int8 == printOp->getType()) {
             std::string const printValueStr = printOp->toString();
             std::istringstream iss(printValueStr.substr(printValueStr.find_first_of('(', 0) + 1, printValueStr.length() - printValueStr.find_first_of('(', 0) - 2));
-            int32_t printValue = 0;
+            int8_t printValue;
             iss >> printValue;
-            if (32 <= printValue && 127 >= printValue) {
+            if (0x20 <= printValue && 0x7f > printValue) {
                 std::cout << '\'' << static_cast<char>(printValue) << "\';" << std::endl;
             } else {
                 std::cout << ERR << std::endl << ERR_N_PREFIX "Non " ORANGE "print" WHITE "able value(\'" UNDERLINE << printValue << WHITE "\');" << std::endl;
@@ -208,7 +208,7 @@ bool LaunchAVM::parseDump() {
 }
 
 bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
-    if (2 > _operands->size()) {
+    if (MIN_VAL_FOR_ARIPHMETHIC_OP > _operands->size()) {
         std::cout << ERR_N_PREFIX "can't parse \'"
             << command << "\' because at the top of the stack less then 2 values;" << std::endl;
         return false;

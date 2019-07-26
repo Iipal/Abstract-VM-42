@@ -3,6 +3,8 @@
 #include "Reader.hpp"
 #include "OperandFactory.hpp"
 
+#define MIN_VAL_FOR_ARIPHMETHIC_OP 2
+
 class LaunchAVM {
 public:
     LaunchAVM();

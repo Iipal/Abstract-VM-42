@@ -54,7 +54,7 @@ bool ReadStandardInputFeatures::specList(std::vector<std::string> &commandQueue)
             std::istringstream iss(commandQueue[i].substr(commandQueue[i].find_first_of('(', 0) + 1, commandQueue[i].length() - commandQueue[i].find_first_of('(', 0) - 2));
             int8_t value;
             iss >> value;
-            if (32 <= value && 127 >= value) {
+            if (0x20 <= value && 0x7f > value) {
                 std::cout << DIM " : \'" << static_cast<char>(value) << "\'" WHITE;
             }
         }
