@@ -3,7 +3,7 @@
 
 LaunchAVM::LaunchAVM() { }
 LaunchAVM::LaunchAVM(const LaunchAVM &copy) { *this = copy; }
-LaunchAVM::~LaunchAVM() { if (!isClear()) { clear(); } }
+LaunchAVM::~LaunchAVM() { if (!_isClear) { clear(); } }
 
 LaunchAVM &LaunchAVM::operator=(const LaunchAVM &copy) {
     if (this != &copy) {
@@ -75,8 +75,6 @@ bool LaunchAVM::launchAVM(std::vector<std::string> *commandQueue) {
 
 /* private methods */
 
-bool const &LaunchAVM::isClear() const { return this->_isClear; }
-
 void LaunchAVM::clear() {
     if (_operands) {
         std::list<IOperand const*>::iterator it = _operands->begin();
@@ -105,7 +103,7 @@ bool LaunchAVM::parsePush(std::string const &param) {
     }
 
     _operands->push_front(gOFactory.createOperand(_oType, _paramValue));
-    std::cout << " push \'" BLUE << _paramType << "(" << _paramValue << ")" WHITE "\';" << std::endl;
+    std::cout << " " BLUE "push" WHITE ": " << _paramType << '(' << _paramValue << ");" << std::endl;
     return true;
 }
 
@@ -133,6 +131,7 @@ bool LaunchAVM::parseAssert(std::string const &param) {
     std::string itParamValue = (*it)->toString();
     itParamValue = itParamValue.substr(itParamValue.find_first_of('(', 0) + 1,
         itParamValue.find_first_of(')', 0) - (itParamValue.find_first_of('(', 0) + 1));
+    std::cout << " " MAGENTA "assert" WHITE ": ";
     if ((*it)->getType() != _oType || itParamValue != _paramValue) {
         std::cout << ERR_N_PREFIX
             << param << " is " RED "false" WHITE ";" << std::endl;
@@ -147,11 +146,10 @@ bool LaunchAVM::parseExit() { return true; }
 
 bool LaunchAVM::parsePop() {
     if (!_operands->size()) {
-        std::cout << ERR_N_PREFIX
-            "any values currently pushed, \'pop\' can't unstack value from top;" << std::endl;
+        std::cout << ERR_N_PREFIX "any values currently pushed, \'pop\' can't unstack value from top;" << std::endl;
         return false;
     } else {
-        std::cout << " pop \'" RED << (*(_operands->begin()))->toString() << WHITE "\';" << std::endl;
+        std::cout << " " RED "pop" WHITE ": " << (*(_operands->begin()))->toString() << ';' << std::endl;
         delete *(_operands->begin());
         _operands->pop_front();
     }
@@ -160,7 +158,7 @@ bool LaunchAVM::parsePop() {
 
 bool LaunchAVM::parsePrint() {
     bool isValid = true;
-    std::cout << " print: ";
+    std::cout << " " CYAN "print" WHITE ": ";
     if (!_operands->size()) {
         std::cout << ERR << std::endl << ERR_N_PREFIX
             "any values currently pushed, \'print\' can't display top value;" << std::endl;
@@ -197,7 +195,7 @@ bool LaunchAVM::parseDump() {
         std::list<IOperand const*>::iterator it = _operands->begin();
         while (_operands->end() != it) {
             ++elementNumber;
-            std::cout << std::setiosflags(std::ios::right) << "[" UNDERLINE << std::setw(6) << elementNumber << WHITE "]: " << (*it)->toString();
+            std::cout << std::setiosflags(std::ios::right) << " [" UNDERLINE << std::setw(6) << elementNumber << WHITE "]: " << (*it)->toString();
             if (Int32 < (*it)->getType()) {
                 std::cout << ", precision = " << (*it)->getPrecision();
             }
@@ -209,16 +207,18 @@ bool LaunchAVM::parseDump() {
 }
 
 bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
-    if (MIN_VAL_FOR_ARIPHMETHIC_OP > _operands->size()) {
+    if (MIN_OPERANDS_FOR_ARIPHMETHICS > _operands->size()) {
         std::cout << ERR_N_PREFIX "can't parse \'"
-            << command << "\' because at the top of the stack less then 2 values;" << std::endl;
+            << command << "\' because at the top of the stack less then " UNDERLINE
+            << MIN_OPERANDS_FOR_ARIPHMETHICS << WHITE " values;" << std::endl;
         return false;
     } else {
         IOperand const *lOperand = *(_operands->begin());
         IOperand const *rOperand = *(++_operands->begin());
         IOperand const *result = NULL;
 
-        std::cout << "\'" << (*lOperand).toString() << "\' " BLUE << op << WHITE " \'" << (*rOperand).toString() << "\' = ";
+        std::cout << ' ' << command << ": " << (*lOperand).toString()
+            << " " ORANGE << op << WHITE " " << (*rOperand).toString() << " = ";
         switch (op) {
             case '+': result = *lOperand + *rOperand; break;
             case '-': result = *lOperand - *rOperand; break;
@@ -229,9 +229,11 @@ bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
         }
 
         if (result) {
-            std::cout << "\'" UNDERLINE << (*result).toString() << WHITE "\';" << std::endl;
-            delete lOperand; delete rOperand;
-            _operands->pop_front(); _operands->pop_front();
+            std::cout << '\'' << (*result).toString() << "\';" << std::endl;
+            delete lOperand;
+            delete rOperand;
+            _operands->pop_front();
+            _operands->pop_front();
             _operands->push_front(result);
         } else {
             std::cout << ERR_N_PREFIX "something went wrong when parsing \'" << command << "\';" << std::endl;
@@ -255,7 +257,7 @@ void LaunchAVM::displayUnexecutedCommands(std::vector<std::string> *commandQueue
     bool isBreak = false;
     std::vector<std::string>::iterator i = commandQueue->begin();
     while (commandQueue->end() != i) {
-        std::cout << "[" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), i) + 1 << WHITE "]: \'";
+        std::cout << " [" UNDERLINE << std::setw(6) << std::distance(commandQueue->begin(), i) + 1 << WHITE "]: ";
         if (i < it) {
             std::cout << DIM CYAN;
         } else {
@@ -266,7 +268,7 @@ void LaunchAVM::displayUnexecutedCommands(std::vector<std::string> *commandQueue
                 std::cout << BLUE;
             }
         }
-        std::cout << *i++ << WHITE "\';" << std::endl;
+        std::cout << *i++ << WHITE ";" << std::endl;
         if (isBreak) { break ; }
     }
 }

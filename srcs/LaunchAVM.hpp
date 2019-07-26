@@ -3,7 +3,7 @@
 #include "Reader.hpp"
 #include "OperandFactory.hpp"
 
-#define MIN_VAL_FOR_ARIPHMETHIC_OP 2
+#define MIN_OPERANDS_FOR_ARIPHMETHICS 2
 
 class LaunchAVM {
 public:
@@ -18,7 +18,6 @@ public:
 private:
     std::list<IOperand const *> *_operands;
     bool _isClear;
-    bool const &isClear() const;
     void clear();
 
     bool parsePush(std::string const &param);
