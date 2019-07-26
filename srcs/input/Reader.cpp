@@ -16,7 +16,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
     std::vector<std::string> *commandQueue = new std::vector<std::string>();
     if (!commandQueue) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "cannot allocate memory;" << std::endl;
+        std::cout << ERR_N_PREFIX "cannot allocate memory;" << std::endl;
         return commandQueue;
     }
 
@@ -33,7 +33,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
 
         std::getline(std::cin, tmp);
         if (std::cin.bad() || std::cin.eof() || std::cin.fail()) {
-            std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "Error occured in standard input;" << std::endl;
+            std::cout << ERR_N_PREFIX "Error occured in standard input;" << std::endl;
             _exit = true;
             isValidInput = false;
         } else {
@@ -56,7 +56,7 @@ std::vector<std::string> *Reader::readStandardInput(void) const {
     }
 
     if (isValidInput && !commandQueue->size()) {
-        std::cout << std::endl << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "command queue is empty, can't execute AVM." << std::endl;
+        std::cout << std::endl << ERR_N_PREFIX "command queue is empty, can't execute AVM." << std::endl;
         isValidInput = false;
     }
 
@@ -70,7 +70,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
 
     std::vector<std::string> *commandQueue = new std::vector<std::string>();
     if (!commandQueue) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "cannot allocate memory;" << std::endl;
+        std::cout << ERR_N_PREFIX "cannot allocate memory;" << std::endl;
         return commandQueue;
     }
 
@@ -83,7 +83,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
         if (!std::getline(std::cin, tmp)) {
             quit = true;
         } else if (std::cin.bad() || std::cin.fail()) {
-            std::cout << std::endl << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "error occured in pipe input;" << std::endl;
+            std::cout << std::endl << ERR_N_PREFIX "error occured in pipe input;" << std::endl;
             quit = true; isValid = false;
         } else {
             v.baseStringPrepareAfterReading(tmp);
@@ -96,7 +96,7 @@ std::vector<std::string> *Reader::readPipeInput(void) const {
     }
 
     if (!isValid) {
-        std::cout << std::endl << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter())
+        std::cout << std::endl << ERR_N_PREFIX
             "invalid command queue. " UNDERLINE RED "can't execute AVM" WHITE ";" << std::endl;
         delete commandQueue; commandQueue = NULL;
     } else { std::cout << AVM_PREFIX BLUE "pipe" WHITE " " UNDERLINE "successful" WHITE " read;" << std::endl; }
@@ -109,7 +109,7 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
 
     std::vector<std::string> *commandQueue = new std::vector<std::string>();
     if (!commandQueue) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "cannot allocate memory;" << std::endl;
+        std::cout << ERR_N_PREFIX "cannot allocate memory;" << std::endl;
         return commandQueue;
     }
 
@@ -133,12 +133,12 @@ std::vector<std::string> *Reader::readFileInput(std::string const &fileName) con
         }
 
         if (isValid && !commandQueue->size()) {
-            std::cout << std::endl << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter())
+            std::cout << std::endl << ERR_N_PREFIX
                 "command queue is empty, can't execute AVM." << std::endl;
             isValid = false;
         }
     } else {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "\'" << fileName << "\' file is invalid." << std::endl;
+        std::cout << ERR_N_PREFIX "\'" << fileName << "\' file is invalid." << std::endl;
         isValid = false;
     }
 

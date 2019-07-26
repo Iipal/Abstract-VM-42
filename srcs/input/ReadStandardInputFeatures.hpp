@@ -1,7 +1,9 @@
 #pragma once
 
+#include <regex>
 #include <vector>
 #include <unistd.h>
+#include <algorithm>
 #include "Validation.hpp"
 
 #define MAX_SPECIFIED_COMMANDS 4

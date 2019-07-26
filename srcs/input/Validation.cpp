@@ -22,7 +22,6 @@ void Validation::baseStringPrepareAfterReading(std::string &command) const {
 }
 
 bool Validation::validatingReadedCommand(std::string &command) const {
-    const size_t previousErrorsCounterState = Validation::getGlobalErrorsCounter();
     bool isValidCurrentCommand = false;
 
     for (size_t i = ~0ULL; MAX_VALID_NO_PARAM_COMMANDS > ++i;) {
@@ -45,7 +44,7 @@ bool Validation::validatingReadedCommand(std::string &command) const {
     }
 
     if (!isValidCurrentCommand) {
-        std::cout << ERR_N_PREFIX(previousErrorsCounterState + 1) "\'" INVERT;
+        std::cout << ERR_N_PREFIX "\'" INVERT;
 
         const size_t isSpaceInCommand = command.find_first_of(' ', 0);
         if (isSpaceInCommand < command.length()) {
@@ -149,13 +148,16 @@ bool Validation::validatingCommandParam(std::string &commandParam) const {
             return isValid;
         }
     }
+
     const size_t _paramStartBrakcet = commandParam.find_first_of('(', 0);
     std::cout << ERR_REPORT_PREFIX "invalid type \'" INVERT;
+
     if (_paramStartBrakcet < commandParam.length()) {
         std::cout << commandParam.substr(0, _paramStartBrakcet);
     } else {
         std::cout << commandParam;
     }
+
     std::cout << WHITE "\';" << std::endl;
     return false;
 }
@@ -170,10 +172,13 @@ static inline bool baseIntValidatingCommandParamValueInRange(std::string const &
         switch (type) {
             case Int8: std::cout << ", but with overflow to current type int8_t(" UNDERLINE
                 << INT8_MAX << WHITE " - " UNDERLINE << INT8_MIN << WHITE ");" << std::endl; break;
+
             case Int16: std::cout << ", but with overflow to current type int16_t(" UNDERLINE
                 << INT16_MAX << WHITE " - " UNDERLINE << INT16_MIN << WHITE ");" << std::endl; break;
+
             case Int32: std::cout << ", but with overflow to current type int32_t(" UNDERLINE
                 << INT32_MAX << WHITE " - " UNDERLINE << INT32_MIN << WHITE ");" << std::endl; break;
+
             default: std::cout << ';' << std::endl; break;
         }
         out = false;
@@ -203,8 +208,10 @@ bool Validation::validatingCommandParamValueInRange(std::string const &paramValu
             case Int8: baseConvertCommandParamInRangeValue(static_cast<int8_t>(_trueIntValue) * (isNegative ? -1 : 1), commandParam, bracket); break;
             case Int16: baseConvertCommandParamInRangeValue(static_cast<int16_t>(_trueIntValue) * (isNegative ? -1 : 1), commandParam, bracket); break;
             case Int32: baseConvertCommandParamInRangeValue(_trueIntValue * (isNegative ? -1 : 1), commandParam, bracket); break;
+
             case Float: baseConvertCommandParamInRangeValue(static_cast<float>(_trueFloatValue) * (isNegative ? -1.0f : 1.0f), commandParam, bracket); break;
             case Double: baseConvertCommandParamInRangeValue(_trueFloatValue * (isNegative ? -1.0 : 1.0), commandParam, bracket); break;
+
             default: break;
         }
     }

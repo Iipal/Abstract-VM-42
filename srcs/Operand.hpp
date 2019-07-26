@@ -43,21 +43,21 @@ public:
         switch (newType) {
             case Int8: {
                 if (INT8_MAX < newValue || INT8_MIN > newValue) {
-                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                    std::cout << ERR << std::endl <<  ERR_REPORT_PREFIX << newValue
                         << " is overflow of type int8_t(" UNDERLINE << INT8_MAX << " - " << INT8_MIN << WHITE ");" << std::endl;
                     isValid = false;
                 } break;
             }
             case Int16: {
                 if (INT16_MAX < newValue || INT16_MIN > newValue) {
-                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                    std::cout << ERR << std::endl <<  ERR_REPORT_PREFIX << newValue
                         << " is overflow of type int16_t(" UNDERLINE << INT16_MAX << " - " << INT16_MIN << WHITE ");" << std::endl;
                     isValid = false;
                 } break;
             }
             case Int32: {
                 if (INT32_MAX < newValue || INT32_MIN > newValue) {
-                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                    std::cout << ERR << std::endl <<  ERR_REPORT_PREFIX << newValue
                         << " is overflow of type int32_t(" UNDERLINE << INT32_MAX << " - " << INT32_MIN << WHITE ");" << std::endl;
                     isValid = false;
                 } break;
@@ -72,14 +72,14 @@ public:
         switch (newType) {
             case Float: {
                 if (__FLT_MAX__ < newValue || __FLT_MIN__ > newValue) {
-                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                    std::cout << ERR << std::endl <<  ERR_REPORT_PREFIX << newValue
                         << " is overflow of type float(" UNDERLINE << __FLT_MAX__ << " - " << __FLT_MIN__ << WHITE ");" << std::endl;
                     isValid = false;
                 } break;
             }
             case Double: {
                 if (__DBL_MAX__ < newValue || __DBL_MIN__ > newValue) {
-                    std::cout << RED "error" WHITE << std::endl <<  ERR_REPORT_PREFIX << newValue
+                    std::cout << ERR << std::endl <<  ERR_REPORT_PREFIX << newValue
                         << " is overflow of type double(" UNDERLINE << __DBL_MAX__ << " - " << __DBL_MIN__ << WHITE ");" << std::endl;
                     isValid = false;
                 } break;
@@ -104,7 +104,7 @@ public:
                 case '*': newIntValue = lOperandIntValue * this->_value; break;
                 case '/': {
                     if (!lOperandIntValue || !this->_value) {
-                        std::cout << RED "error" WHITE << std::endl << ERR_REPORT_PREFIX
+                        std::cout << ERR << std::endl << ERR_REPORT_PREFIX
                             "one of the operands is zero, division by zero is undefined;" << std::endl;
                         isValid = false;
                     } else { newIntValue = lOperandIntValue / this->_value; }
@@ -112,7 +112,7 @@ public:
                 }
                 case '%': {
                     if (!lOperandIntValue || !this->_value) {
-                        std::cout << RED "error" WHITE << std::endl << ERR_REPORT_PREFIX
+                        std::cout << ERR << std::endl << ERR_REPORT_PREFIX
                             "one of the operands is zero, malformed expression;" << std::endl;
                         isValid = false; break;
                     } else { newIntValue = lOperandIntValue / this->_value; }
@@ -133,14 +133,14 @@ public:
                 case '*': newDoubleValue = lOperandDoubleValue * this->_value; break;
                 case '/': {
                     if (!lOperandDoubleValue || !this->_value) {
-                        std::cout << RED "error" WHITE << std::endl << ERR_REPORT_PREFIX
+                        std::cout << ERR << std::endl << ERR_REPORT_PREFIX
                             "one of the operands is zero, division by zero is undefined;" << std::endl;
                         isValid = false;
                     } else { newDoubleValue = lOperandDoubleValue / this->_value; }
                     break;
                 }
                 case '%': {
-                    std::cout << RED "error" WHITE << std::endl << ERR_REPORT_PREFIX
+                    std::cout << ERR << std::endl << ERR_REPORT_PREFIX
                         "one of the operands is float-pointing value, malformed expression;" << std::endl;
                     isValid = false; break;
                 }

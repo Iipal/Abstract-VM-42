@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IOperand.hpp"
+#include "Validation.hpp"
 #include <algorithm>
 #include <iomanip>
 #include <string>
@@ -18,7 +19,8 @@
 #define UNDERLINE "\033[4m"
 
 #define AVM_PREFIX "    AVM "
-#define ERR_N_PREFIX(errNum) AVM_PREFIX RED "error" WHITE << " [" UNDERLINE << std::setw(6) << errNum << WHITE "]: "
+#define ERR RED "error" WHITE
+#define ERR_N_PREFIX AVM_PREFIX ERR << " [" UNDERLINE << std::setw(6) << Validation::incrementGlobalErrorsCounter() << WHITE "]: "
 #define ERR_REPORT_PREFIX AVM_PREFIX ORANGE "error-report" WHITE "⤵ : "
 #define REPORT_PREFIX AVM_PREFIX BLUE "report" WHITE "      ⤴ : "
 #define WARN_PREFIX AVM_PREFIX MAGENTA "warning" WHITE "     → : "

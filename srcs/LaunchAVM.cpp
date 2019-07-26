@@ -18,7 +18,7 @@ bool LaunchAVM::launchAVM(std::vector<std::string> *commandQueue) {
 
     _operands = new std::list<IOperand const*>();
     if (!_operands) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "can't allocate memory;" << std::endl;
+        std::cout << ERR_N_PREFIX "can't allocate memory;" << std::endl;
         _isClear = true;
         return _operands;
     } else { _isClear = false; }
@@ -111,7 +111,7 @@ bool LaunchAVM::parsePush(std::string const &param) {
 
 bool LaunchAVM::parseAssert(std::string const &param) {
     if (!_operands->size()) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "any values currently pushed, can't parse \'assert\';" << std::endl;
+        std::cout << ERR_N_PREFIX "any values currently pushed, can't parse \'assert\';" << std::endl;
         return false;
     }
 
@@ -134,7 +134,7 @@ bool LaunchAVM::parseAssert(std::string const &param) {
     itParamValue = itParamValue.substr(itParamValue.find_first_of('(', 0) + 1,
         itParamValue.find_first_of(')', 0) - (itParamValue.find_first_of('(', 0) + 1));
     if ((*it)->getType() != _oType || itParamValue != _paramValue) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter())
+        std::cout << ERR_N_PREFIX
             << param << " is " RED "false" WHITE ";" << std::endl;
         return false;
     } else {
@@ -147,7 +147,7 @@ bool LaunchAVM::parseExit() { return true; }
 
 bool LaunchAVM::parsePop() {
     if (!_operands->size()) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter())
+        std::cout << ERR_N_PREFIX
             "any values currently pushed, \'pop\' can't unstack value from top;" << std::endl;
         return false;
     } else {
@@ -160,8 +160,9 @@ bool LaunchAVM::parsePop() {
 
 bool LaunchAVM::parsePrint() {
     bool isValid = true;
+    std::cout << " print: ";
     if (!_operands->size()) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter())
+        std::cout << ERR << std::endl << ERR_N_PREFIX
             "any values currently pushed, \'print\' can't display top value;" << std::endl;
         isValid = false;
     } else {
@@ -170,14 +171,14 @@ bool LaunchAVM::parsePrint() {
             std::string const printValueStr = printOp->toString();
             int32_t printValue = std::stoi(printValueStr.substr(printValueStr.find_first_of('(', 0) + 1, printValueStr.length() - printValueStr.find_first_of('(', 0) - 2));
             if (32 <= printValue && 127 >= printValue) {
-                std::cout << " print: \'" << static_cast<char>(printValue) << "\';" << std::endl;
+                std::cout << '\'' << static_cast<char>(printValue) << "\';" << std::endl;
             } else {
-                std::cout << WARN_PREFIX "Non " ORANGE "print" WHITE "able value;" << std::endl;
+                std::cout << ERR << std::endl << ERR_N_PREFIX "Non " ORANGE "print" WHITE "able value(\'" UNDERLINE << printValue << WHITE "\');" << std::endl;
                 isValid = false;
             }
         } else {
-            std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "top value( \'" UNDERLINE
-                << (*(_operands->begin()))->toString() << "has non " RED "print" WHITE "ble(int8 aka char) type;";
+            std::cout << ERR << std::endl << ERR_N_PREFIX "top value(\'" UNDERLINE
+                << (*(_operands->begin()))->toString() << WHITE "\') has non " RED "print" WHITE "able type(bigger than int8 aka char);" << std::endl;
             isValid = false;
         }
     }
@@ -186,8 +187,7 @@ bool LaunchAVM::parsePrint() {
 
 bool LaunchAVM::parseDump() {
     if (!_operands->size()) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter())
-            "any values currently pushed, \'dump\' can't print all stack values;" << std::endl;
+        std::cout << ERR_N_PREFIX "any values currently pushed, \'dump\' can't print all stack values;" << std::endl;
         return false;
     } else {
         size_t elementNumber = 0;
@@ -207,7 +207,7 @@ bool LaunchAVM::parseDump() {
 
 bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
     if (2 > _operands->size()) {
-        std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "can't parse \'"
+        std::cout << ERR_N_PREFIX "can't parse \'"
             << command << "\' because at the top of the stack less then 2 values;" << std::endl;
         return false;
     } else {
@@ -231,7 +231,7 @@ bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
             _operands->pop_front(); _operands->pop_front();
             _operands->push_front(result);
         } else {
-            std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter()) "something went wrong when parsing \'" << command << "\';" << std::endl;
+            std::cout << ERR_N_PREFIX "something went wrong when parsing \'" << command << "\';" << std::endl;
             return false;
         }
     }

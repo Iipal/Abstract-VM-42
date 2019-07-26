@@ -48,7 +48,15 @@ bool ReadStandardInputFeatures::specList(std::vector<std::string> &commandQueue)
 
     size_t i = ~0ULL;
     while (commandQueue.size() > ++i) {
-        std::cout << "    [" UNDERLINE << std::setw(6) << i + 1 << WHITE "]: " << commandQueue[i] << std::endl;
+        std::cout << "    [" UNDERLINE << std::setw(6) << i + 1 << WHITE "]: " << commandQueue[i];
+
+        if (!commandQueue[i].compare(commandQueue[i].find_first_of(' ', 0) + 1, 4, "int8")) {
+            int32_t const value = std::stoi(commandQueue[i].substr(commandQueue[i].find_first_of('(', 0) + 1, commandQueue[i].length() - commandQueue[i].find_first_of('(', 0) - 2));
+            if (32 <= value && 127 >= value) {
+                std::cout << DIM " : \'" << static_cast<char>(value) << "\'" WHITE;
+            }
+        }
+        std::cout << ';' << std::endl;
     }
     return true;
 }

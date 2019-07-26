@@ -55,7 +55,7 @@ std::vector<std::string> *mainCheckMultiFileStackInput(int &argc, char *argv[], 
 
     if (isMultiFileStackMode) {
         if (!argc) {
-            std::cout << ERR_N_PREFIX(Validation::incrementGlobalErrorsCounter())
+            std::cout << ERR_N_PREFIX
                 ORANGE "multi file stack" WHITE " flag detected without any files input in arguments;" << std::endl;
         } else if (1 == argc) {
             std::cout << WARN_PREFIX ORANGE "multi file stack" WHITE " is useless for only 1 file;" << std::endl << std::endl;
