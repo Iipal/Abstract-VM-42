@@ -52,12 +52,10 @@ template <typename T> inline eOperandType Operand<T>::getType(void) const { retu
 template <typename T>
 inline int Operand<T>::getPrecision(void) const {
     int _precision = 0;
-    if (Double == _type || Float == _type) {
+    if (Int32 < _type) {
         const size_t _valueFloatingPointDot = _valueStr.find_first_of('.', 0);
         if (_valueFloatingPointDot < _valueStr.length()) {
-            std::string _valueAfterDot = _valueStr.substr(_valueFloatingPointDot + 1, _valueStr.length() - _valueFloatingPointDot - 2);
-            _valueAfterDot.erase(std::find_if(_valueAfterDot.rbegin(), _valueAfterDot.rend(), [](int ch){ return ch != '0'; }).base(), _valueAfterDot.end());
-            _precision = _valueAfterDot.length();
+            _precision = _valueStr.substr(_valueFloatingPointDot + 1, _valueStr.length() - _valueFloatingPointDot - 2).length();
         }
     }
     return _precision;
