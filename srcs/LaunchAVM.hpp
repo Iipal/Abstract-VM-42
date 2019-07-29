@@ -33,7 +33,7 @@ private:
     bool parsePrint();
     bool parseDump();
 
-    bool baseAriphmetic(std::string const command, char const op);
+    bool baseArithmetic(std::string const command, char const op);
     bool parseAdd();
     bool parseSub();
     bool parseMul();
@@ -46,5 +46,5 @@ private:
         &LaunchAVM::parseAdd, &LaunchAVM::parseSub, &LaunchAVM::parseMul, &LaunchAVM::parseDiv,
         &LaunchAVM::parseMod, };
 
-    void displayUnexecutedCommands(std::vector<std::string> *commandQueue, std::vector<std::string>::iterator &it, size_t const &commandsCounter);
+    void displayUnexecutedCommands(std::vector<std::string> *commandQueue, std::vector<std::string>::iterator &it, size_t commandsCounter);
 };

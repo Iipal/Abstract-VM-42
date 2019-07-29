@@ -206,7 +206,7 @@ bool LaunchAVM::parseDump() {
     return true;
 }
 
-bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
+bool LaunchAVM::baseArithmetic(std::string const command, char const op) {
     if (MIN_OPERANDS_FOR_ARIPHMETHICS > _operands->size()) {
         std::cout << ERR_N_PREFIX "can't parse \'"
             << command << "\' because at the top of the stack less then " UNDERLINE
@@ -217,7 +217,7 @@ bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
         IOperand const *rOperand = *(++_operands->begin());
         IOperand const *result = NULL;
 
-        std::cout << ' ' << command << ": " << (*lOperand).toString()
+        std::cout << " " ORANGE << command << WHITE ": " << (*lOperand).toString()
             << " " ORANGE << op << WHITE " " << (*rOperand).toString() << " = ";
         switch (op) {
             case '+': result = *lOperand + *rOperand; break;
@@ -243,13 +243,13 @@ bool LaunchAVM::baseAriphmetic(std::string const command, char const op) {
     return true;
 }
 
-bool LaunchAVM::parseAdd() { return baseAriphmetic("add", '+'); }
-bool LaunchAVM::parseSub() { return baseAriphmetic("sub", '-'); }
-bool LaunchAVM::parseMul() { return baseAriphmetic("mul", '*'); }
-bool LaunchAVM::parseDiv() { return baseAriphmetic("div", '/'); }
-bool LaunchAVM::parseMod() { return baseAriphmetic("mod", '%'); }
+bool LaunchAVM::parseAdd() { return baseArithmetic("add", '+'); }
+bool LaunchAVM::parseSub() { return baseArithmetic("sub", '-'); }
+bool LaunchAVM::parseMul() { return baseArithmetic("mul", '*'); }
+bool LaunchAVM::parseDiv() { return baseArithmetic("div", '/'); }
+bool LaunchAVM::parseMod() { return baseArithmetic("mod", '%'); }
 
-void LaunchAVM::displayUnexecutedCommands(std::vector<std::string> *commandQueue, std::vector<std::string>::iterator &it, size_t const &commandsCounter) {
+void LaunchAVM::displayUnexecutedCommands(std::vector<std::string> *commandQueue, std::vector<std::string>::iterator &it, size_t commandsCounter) {
     std::cout << WARN_PREFIX "at least [" UNDERLINE << std::setw(6) << (std::distance(commandQueue->begin(),
         std::find_if(it, commandQueue->end(), [](std::string const &str){ return str == "exit"; })) - commandsCounter)
         << WHITE "] commands was un-executed after \'exit\':" << std::endl;
