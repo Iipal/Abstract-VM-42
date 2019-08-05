@@ -170,7 +170,6 @@ bool LaunchAVM::parsePrint() {
             std::istringstream iss(printValueStr.substr(printValueStr.find_first_of('(', 0) + 1, printValueStr.length() - printValueStr.find_first_of('(', 0) - 2));
             int32_t printValue = 0;
             iss >> printValue;
-            std::cout << printValue << std::endl;
             if (0x20 <= printValue && 0x7f > printValue) {
                 std::cout << '\'' << static_cast<char>(printValue) << "\';" << std::endl;
             } else {
